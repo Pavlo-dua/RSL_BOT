@@ -1,0 +1,19 @@
+[
+  {
+    "Name": "DungeonFarm",
+    "Parameters": {
+      "DungeonName": "Dragon",
+      "Stage": 20,
+      "Runs": -1, // -1 означає нескінченно
+      "SellArtifactsBelow5Stars": true,
+      "StopWhenEnergyIsBelow": 40
+    }
+  },
+  {
+    "Name": "ArenaFarm",
+    "Parameters": {
+      "RefreshList": true,
+      "AvoidStrongOpponents": true
+    }
+  }
+]

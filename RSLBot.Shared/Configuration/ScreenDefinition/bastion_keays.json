@@ -1,0 +1,42 @@
+{
+    "ParentId": "Bastion",
+    "Id": "BastionKeys",
+    "VerificationImage": {
+        "Name": "Bastion_Verify",
+        "Area": {
+            "X": 705,
+            "Y": 50,
+            "Width": 70,
+            "Height": 70
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\basion_arena_classic_keys.png"
+    },
+    "UIElements": [
+        {
+            "Name": "Keys",
+            "Area": {
+                "X": 100,
+                "Y": 100,
+                "Width": 150,
+                "Height": 50
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_keys.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": [
+        {
+            "TargetScreenId": "ClassicArena",
+            "TriggerElement": {
+                "Name": "ClassicArenaKeys",
+                "Area": {
+                    "X": 705,
+                    "Y": 50,
+                    "Width": 70,
+                    "Height": 70
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\basion_arena_classic_keys.png"
+            }
+        }
+    ]
+}

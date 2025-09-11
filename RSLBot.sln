@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSLBot.WPF", "RSLBot.WPF\RSLBot.WPF.csproj", "{B1B55341-EA2D-4F6B-AAB9-328F7529CE78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSLBot.Core", "RSLBot.Core\RSLBot.Core.csproj", "{6747652D-55C6-4FFC-A6A5-8A27487AED8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSLBot.Shared", "RSLBot.Shared\RSLBot.Shared.csproj", "{97D473BC-15BB-4EC2-ACAB-D1BBE64C8B51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSLBot.Telegram", "RSLBot.Telegram\RSLBot.Telegram.csproj", "{6A933370-1D4E-4812-9D4D-1F3C6E0F8482}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B1B55341-EA2D-4F6B-AAB9-328F7529CE78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1B55341-EA2D-4F6B-AAB9-328F7529CE78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1B55341-EA2D-4F6B-AAB9-328F7529CE78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1B55341-EA2D-4F6B-AAB9-328F7529CE78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6747652D-55C6-4FFC-A6A5-8A27487AED8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6747652D-55C6-4FFC-A6A5-8A27487AED8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6747652D-55C6-4FFC-A6A5-8A27487AED8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6747652D-55C6-4FFC-A6A5-8A27487AED8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97D473BC-15BB-4EC2-ACAB-D1BBE64C8B51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97D473BC-15BB-4EC2-ACAB-D1BBE64C8B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97D473BC-15BB-4EC2-ACAB-D1BBE64C8B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97D473BC-15BB-4EC2-ACAB-D1BBE64C8B51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A933370-1D4E-4812-9D4D-1F3C6E0F8482}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A933370-1D4E-4812-9D4D-1F3C6E0F8482}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A933370-1D4E-4812-9D4D-1F3C6E0F8482}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A933370-1D4E-4812-9D4D-1F3C6E0F8482}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

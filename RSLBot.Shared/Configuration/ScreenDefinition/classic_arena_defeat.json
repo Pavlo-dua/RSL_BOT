@@ -1,0 +1,17 @@
+{
+    "ParentId": "ClassicArena",
+    "Id": "ClassicArenaDefeat",
+    "VerificationImage": {
+        "Name": "Arena_SubScreen_Verify",
+        "Area": {
+            "X": 0,
+            "Y": 0,
+            "Width": 10,
+            "Height": 10
+        },
+        "ImageTemplatePath": "templates\\arena\\subscreen_verify.png"
+    },
+    "UIElements": [],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

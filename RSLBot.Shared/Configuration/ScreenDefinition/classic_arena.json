@@ -1,0 +1,66 @@
+{
+    "Id": "ClassicArena",
+    "VerificationImage": {
+        "Name": "ArenaVerify",
+        "Area": {
+            "X": 628,
+            "Y": 0,
+            "Width": 60,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\arena_classic_ver.png"
+    },
+    "UIElements": [
+        {
+            "Name": "Refresh",
+            "Area": {
+                "X": 927,
+                "Y": 110,
+                "Width": 231,
+                "Height": 80
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\arena_classic_refresh.png"
+        },
+        {
+            "Name": "Refresh_dis",
+            "Area": {
+                "X": 927,
+                "Y": 110,
+                "Width": 231,
+                "Height": 80
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\refresh_dis.png"
+        },
+        {
+            "Name": "Start",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\{0}\\Templates\\ArenaClassic\\arena_classic_start.png"
+        },
+        {
+            "Name": "BackButton",
+            "Area": {
+                "X": 10,
+                "Y": 10,
+                "Width": 50,
+                "Height": 50
+            },
+            "ImageTemplatePath": "Templates\\ArenaClassic\\back_button.png"
+        }
+    ],
+    "InnerScreenDefinitions": [
+ 
+    ],
+    "Transitions": [
+        {
+            "TargetScreenId": "Bastion",
+            "TriggerElement": {
+                "Name": "BackButton"
+            }
+        }
+    ]
+}

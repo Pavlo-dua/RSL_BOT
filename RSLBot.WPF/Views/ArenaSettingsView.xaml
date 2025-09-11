@@ -1,0 +1,45 @@
+<UserControl x:Class="RSLBot.WPF.Views.ArenaSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Background="{DynamicResource MaterialDesignBackground}">
+    <Grid Margin="16">
+        <StackPanel MaxWidth="400">
+
+            <GroupBox Header="Покупка жетонів" Style="{DynamicResource MaterialDesignCardGroupBox}" Margin="0,0,0,16">
+                <StackPanel Margin="0">
+                    <CheckBox x:Name="BuyTokensCheckBox"
+                              IsChecked="{Binding Settings.BuyTokensWithGems}" 
+                              Content="Купувати жетони арени за рубіни"/>
+
+                    <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                             materialDesign:HintAssist.Hint="Кількість покупок жетонів арени"
+                             materialDesign:HintAssist.HelperText="Кількість покупок за рубіни. 0 - необмежено."
+                             Text="{Binding Settings.TokenPurchases}"
+                             IsEnabled="{Binding IsChecked, ElementName=BuyTokensCheckBox}"
+                             Margin="0,16,0,16"/>
+                </StackPanel>
+            </GroupBox>
+
+            <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     materialDesign:HintAssist.Hint="Кількість боїв"
+                     materialDesign:HintAssist.HelperText="Вкажіть кількість боїв. 0 - необмежено."
+                     Text="{Binding Settings.NumberOfFights}"/>
+
+            <CheckBox IsChecked="{Binding Settings.RefreshOpponentsOnStart}" 
+                      Content="Оновлювати список супротивників при старті"
+                      Margin="0,24,0,0"/>
+
+            <Button Command="{Binding RunScenarioCommand}" Style="{StaticResource MaterialDesignRaisedButton}" 
+                    HorizontalAlignment="Left" Margin="0,32,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ShieldHalfFull" Margin="0,0,8,0"/>
+                    <TextBlock Text="Запустити сценарій Арени"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

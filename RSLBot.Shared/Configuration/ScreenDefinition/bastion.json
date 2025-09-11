@@ -1,0 +1,41 @@
+{
+    "Id": "Bastion",
+    "VerificationImage": {
+        "Name": "Bastion_Verify",
+        "Area": {
+            "X": 1070,
+            "Y": 580,
+            "Width": 76,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\fightings_button.png"
+    },
+    "UIElements": [
+        {
+            "Name": "Keys",
+            "Area": {
+                "X": 950,
+                "Y": 0,
+                "Width": 60,
+                "Height": 60
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_keys.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": [
+        {
+            "TargetScreenId": "BastionKeys",
+            "TriggerElement": {
+                "Name": "Keys",
+                "Area": {
+                    "X": 950,
+                    "Y": 0,
+                    "Width": 60,
+                    "Height": 60
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_keys.png"
+            }
+        }
+    ]
+}

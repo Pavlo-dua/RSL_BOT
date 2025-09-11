@@ -1,0 +1,62 @@
+<mde:MaterialWindow x:Class="RSLBot.WPF.MainWindow"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:mde="https://spiegelp.github.io/MaterialDesignExtensions/winfx/xaml"
+                    xmlns:tabs="clr-namespace:RSLBot.WPF.ViewModels.Tabs"
+                    xmlns:views="clr-namespace:RSLBot.WPF.Views" 
+                    mc:Ignorable="d"
+                    Title="RSL Bot" Height="720" Width="1080"
+                    TextElement.FontWeight="Regular"
+                    TextElement.FontSize="13"
+                    Background="{DynamicResource MaterialDesignBackground}" Foreground="{DynamicResource MaterialDesignBody}"
+                    Style="{StaticResource MaterialDesignWindow}"
+                    FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+                    SourceInitialized="MainWindow_OnSourceInitialized">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="150"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 
+            Правильне використання згідно з документацією:
+            - Прив'язка до властивості "Items".
+            - Жодних ItemTemplate. Контрол сам відобразить елементи.
+            -->
+            <mde:NavigationRail Style="{DynamicResource MaterialDesignNavigationRail}" BorderThickness="10"
+                                 Width="84"
+                Grid.Column="0"
+                Items="{Binding NavigationItems, Mode=OneTime}"
+                SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+            </mde:NavigationRail>
+
+            <!-- Контент прив'язується до властивості "Content" вибраного елемента навігації -->
+            <ContentControl Grid.Column="1" Content="{Binding CurrentContentViewModel}">
+                <ContentControl.Resources>
+                    <DataTemplate DataType="{x:Type tabs:DashboardViewModel}">
+                        <views:DashboardView />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:ArenaSettingsViewModel}">
+                        <views:ArenaSettingsView />
+                    </DataTemplate>
+                </ContentControl.Resources>
+            </ContentControl>
+        </Grid>
+
+        <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="{DynamicResource MaterialDesignDivider}"/>
+
+        <views:LogView Grid.Row="2" DataContext="{Binding LogViewModel}"/>
+    </Grid>
+    
+</mde:MaterialWindow>

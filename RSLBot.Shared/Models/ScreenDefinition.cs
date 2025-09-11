@@ -1,0 +1,28 @@
+namespace RSLBot.Shared.Models
+{
+    /// <summary>
+    /// Описує один ігровий екран як вузол графа.
+    /// </summary>
+    public class ScreenDefinition
+    {
+        public ScreenDefinitionId ParentId { get; set; }
+        public ScreenDefinitionId Id { get; set; }
+        public required UIElement VerificationImage { get; set; }
+        public List<UIElement> UIElements { get; set; } = [];
+        public List<ScreenDefinition> InnerScreenDefinitions { get; set; } = [];
+
+        public UIElement? this[string name]
+        {
+            get
+            {
+                var n = name.ToUpper();
+                return UIElements.Find(el => el.Name.Equals(n, StringComparison.CurrentCultureIgnoreCase));
+            }
+        }
+
+        /// <summary>
+        /// Список переходів, що містить прямі посилання на цільові екрани.
+        /// </summary>
+        public List<Transition> Transitions { get; set; } = [];
+    }
+}
