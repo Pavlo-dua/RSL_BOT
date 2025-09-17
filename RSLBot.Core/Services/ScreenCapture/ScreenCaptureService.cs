@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
@@ -11,7 +12,7 @@ using RSLBot.Core.Services.ScreenCapture.Interop;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using WinRT;
-using Marshal = System.Runtime.InteropServices.Marshal; // Explicitly use System Marshal
+using Marshal = System.Runtime.InteropServices.Marshal;
 using IDirect3DDxgiInterfaceAccess = RSLBot.Core.Services.ScreenCapture.Interop.IDirect3DDxgiInterfaceAccess;
 
 namespace RSLBot.Core.Services
@@ -31,6 +32,14 @@ namespace RSLBot.Core.Services
         private GraphicsCaptureSession? _session;
         private ID3D11Device? _device;
         private ID3D11DeviceContext? _context;
+        
+        // Нові поля для постійного зчитування фреймів
+        private CancellationTokenSource? _frameProcessingCts;
+        private Task? _frameProcessingTask;
+        private Direct3D11CaptureFrame? _latestFrame;
+        private readonly object _frameLock = new object();
+        private DateTime _lastFrameTime = DateTime.MinValue;
+        private const int FrameTimeoutSeconds = 5; // Таймаут для визначення застарілих фреймів
 
         /// <summary>
         /// Prompts the user to select a window and starts the capture session.
@@ -50,7 +59,8 @@ namespace RSLBot.Core.Services
         }
         
         /// <summary>
-        /// Captures the next available frame from the session.
+        /// Captures the current frame from the session.
+        /// This now returns the most recent frame that was continuously captured in the background.
         /// </summary>
         /// <returns>A Bitmap of the captured frame, or null if a frame was not available.</returns>
         public unsafe Task<Bitmap?> CaptureFrameAsync()
@@ -60,54 +70,74 @@ namespace RSLBot.Core.Services
                 return Task.FromResult<Bitmap?>(null);
             }
 
-            using var frame = _framePool.TryGetNextFrame();
-            if (frame == null)
+            Direct3D11CaptureFrame? frameToProcess = null;
+            
+            lock (_frameLock)
             {
-                return Task.FromResult<Bitmap?>(null);
-            }
-
-            using var sourceTexture = GetTextureFromFrame(frame);
-            if (sourceTexture == null)
-            {
-                return Task.FromResult<Bitmap?>(null);
-            }
-
-            var description = sourceTexture.Description;
-            description.Usage = Vortice.Direct3D11.ResourceUsage.Staging;
-            description.BindFlags = Vortice.Direct3D11.BindFlags.None;
-            description.CPUAccessFlags = Vortice.Direct3D11.CpuAccessFlags.Read;
-            description.MiscFlags = Vortice.Direct3D11.ResourceOptionFlags.None;
-
-            using var stagingTexture = _device.CreateTexture2D(description);
-            _context.CopyResource(stagingTexture, sourceTexture);
-
-            var mappedSubresource = _context.Map(stagingTexture, 0, MapMode.Read, Vortice.Direct3D11.MapFlags.None);
-            try
-            {
-                var bitmap = new Bitmap((int)description.Width, (int)description.Height, PixelFormat.Format32bppArgb);
-                var boundsRect = new Rectangle(0, 0, (int)description.Width, (int)description.Height);
-
-                var mapDest = bitmap.LockBits(boundsRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-                var sourcePtr = mappedSubresource.DataPointer;
-                var destPtr = mapDest.Scan0;
-
-                for (int y = 0; y < description.Height; y++)
+                // Перевіряємо, чи фрейм не застарілий
+                if (_latestFrame != null && 
+                    (DateTime.Now - _lastFrameTime).TotalSeconds < FrameTimeoutSeconds)
                 {
-                    System.Runtime.CompilerServices.Unsafe.CopyBlockUnaligned(
-                        ref ((byte*)destPtr)[0], 
-                        ref ((byte*)sourcePtr)[0], 
-                        (uint)(description.Width * 4));
+                    frameToProcess = _latestFrame;
+                    _latestFrame = null; // Забираємо фрейм для обробки
+                }
+            }
+            
+            if (frameToProcess == null)
+            {
+                // Якщо немає свіжого фрейму, спробуємо взяти прямо зараз
+                frameToProcess = _framePool.TryGetNextFrame();
+                if (frameToProcess == null)
+                {
+                    return Task.FromResult<Bitmap?>(null);
+                }
+            }
 
-                    sourcePtr = IntPtr.Add(sourcePtr, (int)mappedSubresource.RowPitch);
-                    destPtr = IntPtr.Add(destPtr, mapDest.Stride);
+            using (frameToProcess)
+            {
+                using var sourceTexture = GetTextureFromFrame(frameToProcess);
+                if (sourceTexture == null)
+                {
+                    return Task.FromResult<Bitmap?>(null);
                 }
 
-                bitmap.UnlockBits(mapDest);
-                return Task.FromResult<Bitmap?>(bitmap);
-            }
-            finally
-            {
-                _context.Unmap(stagingTexture, 0);
+                var description = sourceTexture.Description;
+                description.Usage = Vortice.Direct3D11.ResourceUsage.Staging;
+                description.BindFlags = Vortice.Direct3D11.BindFlags.None;
+                description.CPUAccessFlags = Vortice.Direct3D11.CpuAccessFlags.Read;
+                description.MiscFlags = Vortice.Direct3D11.ResourceOptionFlags.None;
+
+                using var stagingTexture = _device.CreateTexture2D(description);
+                _context.CopyResource(stagingTexture, sourceTexture);
+
+                var mappedSubresource = _context.Map(stagingTexture, 0, MapMode.Read, Vortice.Direct3D11.MapFlags.None);
+                try
+                {
+                    var bitmap = new Bitmap((int)description.Width, (int)description.Height, PixelFormat.Format32bppArgb);
+                    var boundsRect = new Rectangle(0, 0, (int)description.Width, (int)description.Height);
+
+                    var mapDest = bitmap.LockBits(boundsRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+                    var sourcePtr = mappedSubresource.DataPointer;
+                    var destPtr = mapDest.Scan0;
+
+                    for (int y = 0; y < description.Height; y++)
+                    {
+                        System.Runtime.CompilerServices.Unsafe.CopyBlockUnaligned(
+                            ref ((byte*)destPtr)[0], 
+                            ref ((byte*)sourcePtr)[0], 
+                            (uint)(description.Width * 4));
+
+                        sourcePtr = IntPtr.Add(sourcePtr, (int)mappedSubresource.RowPitch);
+                        destPtr = IntPtr.Add(destPtr, mapDest.Stride);
+                    }
+
+                    bitmap.UnlockBits(mapDest);
+                    return Task.FromResult<Bitmap?>(bitmap);
+                }
+                finally
+                {
+                    _context.Unmap(stagingTexture, 0);
+                }
             }
         }
         
@@ -140,6 +170,46 @@ namespace RSLBot.Core.Services
         }
         
         /// <summary>
+        /// Continuously processes frames in the background to keep the capture stream active.
+        /// </summary>
+        private async Task ProcessFramesAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    if (_framePool != null)
+                    {
+                        var frame = _framePool.TryGetNextFrame();
+                        if (frame != null)
+                        {
+                            lock (_frameLock)
+                            {
+                                // Dispose старого фрейму, якщо він є
+                                _latestFrame?.Dispose();
+                                _latestFrame = frame;
+                                _lastFrameTime = DateTime.Now;
+                            }
+                        }
+                    }
+                    
+                    // Невелика затримка, щоб не перевантажувати CPU
+                    // Але достатньо часта, щоб підтримувати потік активним
+                    await Task.Delay(16, cancellationToken); // ~60 FPS
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch
+                {
+                    // Ігноруємо помилки і продовжуємо
+                    await Task.Delay(100, cancellationToken);
+                }
+            }
+        }
+        
+        /// <summary>
         /// Initializes all resources and starts the capture session.
         /// It waits for the first frame to arrive to ensure the session is ready.
         /// </summary>
@@ -169,25 +239,24 @@ namespace RSLBot.Core.Services
                 if (hr != 0) return false;
 
                 var winrtDevice = MarshalInterface<IDirect3DDevice>.FromAbi(pUnknown);
-//                 Marshal.Release(pUnknown);
                 dxgiDevice.Dispose();
 
                 _framePool = Direct3D11CaptureFramePool.Create(winrtDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 2, _captureItem.Size);
                 
-                // --- KEY CHANGE: Wait for the first frame ---
+                // Wait for the first frame
                 var frameArrivedCompletionSource = new TaskCompletionSource<bool>();
-                _framePool.FrameArrived += (s, a) =>
+                void OnFirstFrameArrived(Direct3D11CaptureFramePool sender, object args)
                 {
-                    // The first frame has arrived, so we signal that the capture is ready.
-                    // We only need to do this once.
                     frameArrivedCompletionSource.TrySetResult(true);
-                };
+                    _framePool.FrameArrived -= OnFirstFrameArrived;
+                }
+                
+                _framePool.FrameArrived += OnFirstFrameArrived;
 
                 _session = _framePool.CreateCaptureSession(_captureItem);
                 _session.StartCapture();
 
                 // Wait for the FrameArrived event to fire, with a timeout.
-                // This ensures we don't wait forever if something goes wrong.
                 var completedTask = await Task.WhenAny(frameArrivedCompletionSource.Task, Task.Delay(5000));
                 if (completedTask != frameArrivedCompletionSource.Task)
                 {
@@ -195,6 +264,10 @@ namespace RSLBot.Core.Services
                     StopCapture();
                     return false;
                 }
+                
+                // Запускаємо фонову обробку фреймів
+                _frameProcessingCts = new CancellationTokenSource();
+                _frameProcessingTask = ProcessFramesAsync(_frameProcessingCts.Token);
 
                 return true;
             }
@@ -215,7 +288,6 @@ namespace RSLBot.Core.Services
                 return null;
             }
             var texture = new ID3D11Texture2D(pResource);
-            // Marshal.Release(pResource); // Release the native pointer
             return texture;
         }
 
@@ -231,6 +303,24 @@ namespace RSLBot.Core.Services
 
         private void StopCapture()
         {
+            // Зупиняємо фонову обробку
+            _frameProcessingCts?.Cancel();
+            try
+            {
+                _frameProcessingTask?.Wait(TimeSpan.FromSeconds(2));
+            }
+            catch { }
+            _frameProcessingCts?.Dispose();
+            _frameProcessingCts = null;
+            _frameProcessingTask = null;
+            
+            // Очищаємо останній фрейм
+            lock (_frameLock)
+            {
+                _latestFrame?.Dispose();
+                _latestFrame = null;
+            }
+            
             _session?.Dispose();
             _framePool?.Dispose();
             _context?.Dispose();
