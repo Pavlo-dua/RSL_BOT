@@ -8,7 +8,14 @@ public enum ScreenDefinitionId
     ClassicArena,
     ClassicArenaPreparing,
     ClassicArenaDefeat,
+    ClassicArenaDefeatResult,
     ClassicArenaVin,
+    ClassicArenaVinResult,
     ClassicArenaFight,
-
+    ClassicArenaFreeTokens,
+    ClassicArenaBuyTokens,
+    ClassicArenaBayTokens,
+    NeedUpgradeGame,
+    ConnectionIssue,
+    TechWork
 }

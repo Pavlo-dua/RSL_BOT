@@ -1,292 +1,587 @@
 using RSLBot.Core.CoreHelpers;
 using RSLBot.Core.Interfaces;
+using RSLBot.Core.Services;
 using RSLBot.Shared.Models;
 using RSLBot.Shared.Settings;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using RSLBot.Core.Services;
+using System.Drawing.Imaging;
+using System.Linq;
+using System.Threading.Tasks;
+using RSLBot.Core.Extensions;
 
 namespace RSLBot.Core.Scenarios.ArenaClassic
 {
-    using RSLBot.Core.Extensions;
-
-    /// <summary>
-    /// Реалізація сценарію для фарму Арени.
-    /// </summary>
     public partial class ArenaFarmingScenario : BaseFarmingScenario<ArenaFarmingSettings>
     {
-        private readonly ILoggingService logger;
+        // Note: ILoggingService is available as 'logger' in the base class 'Manipulation'
         protected override ScreenDefinitionId MainFarmingScreenId => ScreenDefinitionId.ClassicArena;
-
-        /// <inheritdoc />
         public override IScenario.ScenarioId Id => IScenario.ScenarioId.Arena;
+
+        // EN: Template image of the "Fight" button.
+        private Bitmap _startButtonImage;
+        
+        // EN: A list to keep track of all discovered opponents in the current list.
+        private readonly List<Opponent> _opponents = new List<Opponent>();
+        private Bitmap? _firstOpponentSnapshot;
+
+        /// <summary>
+        /// Контрольний знимок для ідентифікації того, що список не оновився повністю.
+        /// </summary>
+        private Point controlSnapShot = new (228, 540);
+
+        // User-defined constants        
+        private const int ScrollDragX = 542;
+        private const int ScrollDragStartYBottom = 613;
+        private const int ScrollDragStartYBottomUp = 208;
+        private const int ScrollDragEndYBottomUp = 534;
+        private const int ScrollDragEndYTop = 155;
+        private const int startBottonX = 940;
+        private const int startBottonWigth = 200;
+        private readonly Rectangle _scrollCheckRect = new Rectangle(228, 540, 207, 88);
 
         public ArenaFarmingScenario(INavigator navigator, ArenaFarmingSettings settings, ILoggingService logger, Tools tools, ImageAnalyzer imageAnalyzer, SharedSettings sharedSettings, ImageResourceManager imageResourceManager)
             : base(navigator, settings, sharedSettings, tools, imageAnalyzer, imageResourceManager, logger)
         {
-            this.logger = logger;
         }
-
-        private readonly List<Opponent> _allOpponents = new List<Opponent>();
-        private Opponent _currentOpponent;
-        private const string StartButtonImagePath = @"C:\Home\My_work\RSL_Bot\RSLBot.Shared\Configuration\Ukr\Templates\ArenaClassic\arena_classic_start.png";
-        private Bitmap _startButtonImage;
+        
+        protected override async Task Prepare()
+        {
+            await base.Prepare();
+            _startButtonImage = ImageResourceManager[@"Configuration\Ukr\Templates\ArenaClassic\arena_classic_start.png"];
+        }
 
         protected override async Task Loop()
         {
-                logger.Info($"Starting Arena scenario for {settings.NumberOfFights} runs.");
+            LoggingService.Info($"Starting Arena scenario for {settings.TokenPurchases} runs.");
+
+            var tokens = await GetTokenCount();
+            
+            LoggingService.Info($"Identified {tokens}/10 tokens.");
+
+            if (tokens == 0)
+            {
+                if (!await TryGetTokens())
+                {
+                    await sharedSettings.CancellationTokenSource.CancelAsync();
+                    return;
+                }
                 
-                if (settings.NumberOfFights == 0)
+                tokens = await GetTokenCount();
+                
+                LoggingService.Info($"Identified {tokens}/10 tokens.");
+            }
+            
+            var needRefresh = settings.RefreshOpponentsOnStart;
+
+            while (true)
+            {
+                LoggingService.Info($"Starting new cycle through opponent list.");
+                _firstOpponentSnapshot = null;
+                
+                if (IsCancellationRequested()) break;
+
+                if (needRefresh)
                 {
-                    logger.Info("NumberOfFights is 0, will farm until the end of the list.");
-                }
-
-               // if (!LoadResources()) return;
-
-                int fightCounter = 0;
-
-                // 1. Scan and fight opponents on the first screen
-                logger.Info("Scanning for opponents on the first screen.");
-                var initialOpponents = await ScanVisibleOpponents();
-                foreach (var opponent in initialOpponents.Where(opponent => !_allOpponents.Contains(opponent)))
-                {
-                    _allOpponents.Add(opponent);
-                }
-
-                foreach (var opponent in initialOpponents)
-                {
-                    if (!ShouldContinueFarming(fightCounter)) break;
-
-                    _currentOpponent = opponent;
-                    logger.Info($"Fighting initial opponent at Y:{_currentOpponent.Area.Y}");
-                    await ExecuteSingleRun();
-                    HandleRunCompletion();
-                    fightCounter++;
-                }
-
-                // 2. Scroll and fight remaining opponents
-                int scrollsPerformed = 0;
-                int endOfListDetectionCounter = 0;
-
-                while (ShouldContinueFarming(fightCounter))
-                {
-                    var visibleBeforeScroll = await ScanVisibleOpponents();
-                    if (!visibleBeforeScroll.Any())
+                    var ca = navigator.GetScreenDefinitionById(ScreenDefinitionId.ClassicArena);
+                    
+                    if (!await navigator.IsElementVisibleAsync(ca["Refresh"]))
                     {
-                        logger.Warning("No opponents visible to scroll, stopping.");
-                        break;
-                    }
-                    var lastOpponentBeforeScroll = visibleBeforeScroll.Last();
-
-                    scrollsPerformed++;
-                    logger.Info($"Scrolling down ({scrollsPerformed} time(s)).");
-
-                    if (! await PerformScrolls(1))
-                    {
-                        logger.Info("Could not scroll further, assuming end of list.");
-                        break;
+                        await WaitImage(ca["Refresh"], 80, 1000 * 10);
                     }
 
-                    var visibleAfterScroll = await ScanVisibleOpponents();
-                    if (!visibleAfterScroll.Any())
-                    {
-                        logger.Warning("No opponents visible after scroll, stopping.");
-                        break;
-                    }
-                    var lastOpponentAfterScroll = visibleAfterScroll.Last();
+                    await Click(ca["Refresh"], ca["Refresh_dis"]);
+                }
+                
+                // Крок 1: Прокрутити на самий верх
+                await ScrollToTop();
+                
+                // Крок 2: Очистити старі дані про опонентів
+                CleanupOpponents();
 
-                    // End of list check
-                    if (lastOpponentAfterScroll.Equals(lastOpponentBeforeScroll))
+                // Встановити контрольний знімок початку списку замість першого опонента
+                await SyncWindow();
+                using (var controlArea = Window.Clone(new Rectangle(controlSnapShot, new Size(207, 85)), Window.PixelFormat))
+                {
+                    _firstOpponentSnapshot = new Bitmap(controlArea);
+                }
+                
+                // Крок 3: Почати обробку списку по "екранам"
+                int currentScrollDepth = 0; // Скільки разів прокрутили від початку (0 = перший екран)
+                bool endOfListReached = false;
+
+                while (!endOfListReached)
+                {
+                    if (IsCancellationRequested()) break;
+
+                    LoggingService.Info($"Processing screen at scroll depth: {currentScrollDepth}");
+
+                    // Крок 4: Сканувати опонентів на поточному екрані
+                    await SyncWindow();
+                    var newOpponents = await ScanVisibleOpponents();
+                    
+                    if (!newOpponents.Any())
                     {
-                        endOfListDetectionCounter++;
-                        logger.Info($"List position unchanged. End of list attempt {endOfListDetectionCounter}/2.");
-                        if (endOfListDetectionCounter >= 2)
-                        {
-                            logger.Info("End of list reached.");
-                            break;
-                        }
+                        LoggingService.Info("No new opponents found on this screen.");
                     }
                     else
                     {
-                        endOfListDetectionCounter = 0; // Reset counter if list moved
+                        LoggingService.Info($"Found {newOpponents.Count} new opponent(s) on this screen.");
+                        _opponents.AddRange(newOpponents);
+                        
+                        // Контрольний знімок вже встановлено від початку списку (controlSnapShot)
                     }
 
-                    var newOpponents = visibleAfterScroll.Where(o => !_allOpponents.Contains(o)).ToList();
-
-                    if (!newOpponents.Any())
+                    // Крок 5: Битися з усіма опонентами на цьому екрані
+                    var opponentsOnThisScreen = newOpponents.ToList(); // Бережемо локальну копію
+                    
+                    for (int i = 0; i < opponentsOnThisScreen.Count; i++)
                     {
-                        logger.Info("No new opponents found after scrolling. Continuing to scroll.");
-                        continue;
-                    }
+                        if (IsCancellationRequested()) break;
 
-                    foreach (var opponent in newOpponents)
-                    {
-                        _allOpponents.Add(opponent);
-                    }
+                        var opponent = opponentsOnThisScreen[i];
+                        
+                        LoggingService.Info($"Fighting opponent {i + 1}/{opponentsOnThisScreen.Count} on screen (depth: {currentScrollDepth})");
 
-                    // Fight the newly found opponents
-                    foreach (var newOpponent in newOpponents)
-                    {
-                        if (!ShouldContinueFarming(fightCounter)) break;
-
-                        logger.Info($"Scrolling back to the page of the next opponent.");
-                        if (!await PerformScrolls(scrollsPerformed))
+                        // Перевірити чи опонент ще видимий перед боєм
+                        await SyncWindow();
+                        if (!await IsOpponentVisible(opponent.Snapshot))
                         {
-                            logger.Warning("Failed to scroll back to the opponent's page. Aborting.");
-                            _startButtonImage?.Dispose();
-                            return; // Abort
+                            LoggingService.Warning("Opponent is not visible before fight. Skipping.");
+                            opponent.Status = FightStatus.Lost;
+                            continue;
                         }
 
-                        _currentOpponent = newOpponent;
-                        logger.Info($"Fighting new opponent at Y:{_currentOpponent.Area.Y}");
-                        ExecuteSingleRun();
-                        HandleRunCompletion();
-                        fightCounter++;
-                    }
-                    if (!ShouldContinueFarming(fightCounter)) break;
-                }
+                        // Битися з опонентом
+                        await FightOpponent(opponent, currentScrollDepth);
 
-                logger.Info("Arena scenario finished.");
-                _startButtonImage?.Dispose();
-        }
+                        // Лічильник боїв видалено разом з налаштуванням кількості боїв
 
-        private bool LoadResources()
-        {
-            return true;
-        }
+                        if (IsCancellationRequested()) break;
 
-        private async Task<List<Opponent>> ScanVisibleOpponents()
-        {
-            var visibleOpponents = new List<Opponent>();
-            await SyncWindow();
-            var buttons = await FindAllImages(_startButtonImage);
-
-            foreach (var buttonRect in buttons.OrderBy(r => r.Y))
-            {
-                var opponentArea = new Rectangle(
-                    229,
-                    buttonRect.Y + buttonRect.Height / 2 - 40,
-                    681,
-                    80);
-
-                visibleOpponents.Add(new Opponent { Area = opponentArea, Status = FightStatus.NotFought });
-            }
-            logger.Info($"Scan found {visibleOpponents.Count} opponents on screen.");
-            return visibleOpponents;
-        }
-
-        private async Task<bool> PerformScrolls(int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                var visibleOpponents = await ScanVisibleOpponents();
-                if (!visibleOpponents.Any())
-                {
-                    logger.Warning("Cannot scroll, no opponents visible.");
-                    return false;
-                }
-
-                var lastOpponentBeforeScroll = visibleOpponents.Last();
-                int scrollAttempts = 0;
-                const int maxScrollAttempts = 3;
-
-                while (scrollAttempts < maxScrollAttempts)
-                {
-                    // Find the current position of the opponent we want to scroll off-screen
-                    var currentPositionOfLastOpponent = ( await ScanVisibleOpponents()).FirstOrDefault(o => o.Equals(lastOpponentBeforeScroll));
-
-                    // If the opponent is no longer visible, the scroll was successful.
-                    if (currentPositionOfLastOpponent == null)
-                    {
-                        logger.Info($"Scroll {i + 1}/{count} successful, opponent is off-screen.");
-                        break; // Exit the while loop and proceed to the next scroll if any
-                    }
-
-                    Point dragFrom = new Point(currentPositionOfLastOpponent.Area.X + currentPositionOfLastOpponent.Area.Width / 2, currentPositionOfLastOpponent.Area.Y + currentPositionOfLastOpponent.Area.Height / 2);
-                    Point dragTo = new Point(dragFrom.X, 140);
-
-                    logger.Info($"Performing scroll {i + 1}/{count} from Y:{dragFrom.Y} (Attempt: {scrollAttempts + 1})");
-                    MouseDrag(dragFrom, dragTo, 1000, 500);
-                    Thread.Sleep(500); // Wait for scroll animation
-
-                    scrollAttempts++;
-
-                    if (scrollAttempts >= maxScrollAttempts)
-                    {
-                        // Final check after the last attempt
-                        if ((await ScanVisibleOpponents()).Any(o => o.Equals(lastOpponentBeforeScroll)))
+                        // Крок 6: Після бою перевірити чи список не скинувся повністю
+                        await SyncWindow();
+                        if (_firstOpponentSnapshot != null && !await IsOpponentVisible(_firstOpponentSnapshot))
                         {
-                            logger.Error($"Failed to scroll opponent off-screen after {maxScrollAttempts} attempts.");
-                            return false; // Indicate that scrolling failed
+                            LoggingService.Info("List was completely reset (league change). Restarting from top.");
+                            goto restart_full_cycle;
+                        }
+
+                        // Крок 7: Прокрутити назад до потрібної глибини (список скинувся на початок після бою)
+                        if (currentScrollDepth > 0)
+                        {
+                            LoggingService.Info($"Scrolling back to depth {currentScrollDepth} after fight...");
+                            await ScrollToDepth(currentScrollDepth);
                         }
                         else
                         {
-                            logger.Info($"Scroll {i + 1}/{count} successful on the last attempt.");
+                            // Якщо на першому екрані, просто трохи почекати
+                            await Task.Delay(300);
+                        }
+                    }
+
+                    if (IsCancellationRequested()) break;
+
+                    // Крок 8: Спробувати прокрутити на наступний екран
+                    LoggingService.Info("Screen cleared. Attempting to scroll to next screen...");
+
+                    await SyncWindow();
+                    using (var areaBeforeScroll = Window.Clone(_scrollCheckRect, Window.PixelFormat))
+                    {
+                        // Прокрутити вниз
+                        MouseDrag(new Point(ScrollDragX, ScrollDragStartYBottom), new Point(ScrollDragX, ScrollDragEndYTop), 200, 500);
+                        await Task.Delay(1000);
+
+                        // Перевірити чи змінився екран
+                        await SyncWindow();
+                        using (var areaAfterScroll = Window.Clone(_scrollCheckRect, Window.PixelFormat))
+                        {
+                            var match = ImageAnalyzer.FindImage(areaBeforeScroll, areaAfterScroll, accuracy: 0.98);
+                            if (match != default)
+                            {
+                                LoggingService.Info("End of list reached - content did not change after scroll.");
+                                endOfListReached = true;
+                            }
+                            else
+                            {
+                                currentScrollDepth++;
+                                LoggingService.Info($"Scrolled successfully. New depth: {currentScrollDepth}");
+                            }
                         }
                     }
                 }
+
+                restart_full_cycle:
+                LoggingService.Info("Finished full cycle through opponent list. Will refresh and start over.");
+                
+                // Перевірити токени перед новим циклом
+                tokens = await GetTokenCount();
+                LoggingService.Info($"Tokens remaining: {tokens}/10");
+                
+                if (tokens == 0)
+                {
+                    LoggingService.Info("No tokens left. Attempting to get more...");
+                    if (!await TryGetTokens())
+                    {
+                        LoggingService.Info("Cannot get more tokens. Ending scenario.");
+                        await sharedSettings.CancellationTokenSource.CancelAsync();
+                        break;
+                    }
+                }
+
+                needRefresh = _opponents.Any(op => op.Status != FightStatus.Won);
             }
-            return true;
+
+            LoggingService.Info("Arena scenario finished.");
         }
 
-        protected override bool CanContinue()
+        private async Task<bool> TryGetTokens()
         {
-            logger.Info("Checking for Arena keys...");
-            return true;
+            var result = false;
+            
+            await ClickAndProcessScreens(navigator.GetScreenDefinitionById(ScreenDefinitionId.ClassicArena)["add_tokens"],
+                [ScreenDefinitionId.ClassicArenaFreeTokens, ScreenDefinitionId.ClassicArenaBuyTokens],
+                async definition =>
+                {
+                    switch (definition.Id)
+                    {
+                        case ScreenDefinitionId.ClassicArenaFreeTokens:
+                            await Click(definition["BayTokens"], navigator.GetScreenDefinitionById(ScreenDefinitionId.ClassicArena));
+                            result = true;
+                            break;
+                        default:
+                            return true;
+                    }
+
+                    return false;
+                }, async _ => await CancellationTokenSource.CancelAsync(), 3000 );
+
+            return result;
         }
 
-        private bool ShouldContinueFarming(int currentFightCount)
+        private async Task<int> GetTokenCount()
         {
-            if (!CanContinue()) // This checks for keys, etc.
-            {
-                return false;
-            }
+            await SyncWindow();
+            
+            var full = ImageAnalyzer.FindImage(Window, ImageResourceManager[@"Configuration\ScreenDefinition\Templates\add_resources.png"], new (818, 13, 16, 20)) != default;
 
-            if (settings.NumberOfFights != 0 && currentFightCount >= settings.NumberOfFights)
-            {
-                logger.Info("Desired number of fights reached.");
-                return false;
-            }
+            var text = ImageAnalyzer.FindText(Window, true, full ? new (841, 13, 52, 22) : new (852, 13, 41, 22));
+            
+           return int.Parse(text.Split('/').First());
+        }
+        
+        private async Task RefreshIfTokensIsEnough()
+        {
+            await SyncWindow(); 
 
-            return true;
         }
 
-        protected override async Task ExecuteSingleRun()
+        /// <summary>
+        /// Point 1: Scrolls the opponent list to the very top.
+        /// </summary>
+        private async Task ScrollToTop()
         {
-            if (_currentOpponent == null)
+            LoggingService.Info("Scrolling to the top of the list.");
+            int maxScrolls = 5; // Safety break
+            Bitmap? previousArea = null;
+
+            for (int i = 0; i < maxScrolls; i++)
             {
-                logger.Error("ExecuteSingleRun called without a valid opponent.");
-                return;
+                await SyncWindow();
+                var currentArea = Window.Clone(_scrollCheckRect, Window.PixelFormat);
+
+                if (previousArea != null && ImageAnalyzer.FindImage(previousArea, currentArea, default, 0.95) != default)
+                {
+                    LoggingService.Info("Top of the list reached.");
+                    previousArea.Dispose();
+                    currentArea.Dispose();
+                    return;
+                }
+                
+                previousArea?.Dispose();
+                previousArea = currentArea;
+
+                MouseDrag(new Point(ScrollDragX, ScrollDragStartYBottomUp), new Point(ScrollDragX, ScrollDragEndYBottomUp), 200, 500);
             }
             
-            logger.Info($"Starting Arena battle against opponent at Y:{_currentOpponent.Area.Y}");
+            LoggingService.Warning("Could not determine if top of the list was reached.");
+        }
 
-            // We assume we are already scrolled to the correct page
-            var opponentButtonRect = (await FindAllImages(_startButtonImage))
-                .OrderBy(r => Math.Abs((r.Y + r.Height / 2) - (_currentOpponent.Area.Y + _currentOpponent.Area.Height / 2)))
-                .FirstOrDefault();
+        /// <summary>
+        /// Scans the screen for fight buttons and creates snapshots for new, unknown opponents.
+        /// </summary>
+        private async Task<List<Opponent>> ScanVisibleOpponents()
+        {
+            var newOpponents = new List<Opponent>();
+            var fightButtons = await FindAllImages(_startButtonImage);
 
-            if (opponentButtonRect == default)
+            LoggingService.Info($"Found {fightButtons.Count} fight button(s) on screen.");
+
+            foreach (var buttonRect in fightButtons.OrderBy(r => r.Y))
             {
-                logger.Warning($"Could not find fight button for opponent at Y:{_currentOpponent.Area.Y}. Skipping.");
-                _currentOpponent.Status = FightStatus.Lost;
+                var opponentArea = new Rectangle(228, buttonRect.Y - 21, 207, 85);
+
+                // Перевірити чи цей опонент вже є в нашому глобальному списку
+                bool isAlreadyKnown = false;
+                
+                foreach (var knownOpponent in _opponents)
+                {
+                    // Шукаємо відповідність у всьому вікні, а не тільки в opponentArea
+                    // Це дозволить знайти опонента навіть якщо він трохи зсунувся
+                    var matchLocation = ImageAnalyzer.FindImage(Window, knownOpponent.Snapshot, default, accuracy: 0.98);
+                    
+                    if (matchLocation != default)
+                    {
+                        // Перевірити чи цей знайдений опонент перекривається з поточною областю
+                        var knownRect = new Rectangle(matchLocation.X, matchLocation.Y, 207, 85);
+                        if (knownRect.IntersectsWith(opponentArea))
+                        {
+                            isAlreadyKnown = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isAlreadyKnown)
+                {
+                    // Це новий опонент - створити знімок
+                    using var opponentSnapshot = Window.Clone(opponentArea, Window.PixelFormat);
+                    var newOpponent = new Opponent 
+                    { 
+                        Snapshot = new Bitmap(opponentSnapshot), 
+                        Status = FightStatus.NotFought 
+                    };
+                    newOpponents.Add(newOpponent);
+                    LoggingService.Info($"New opponent discovered at Y={buttonRect.Y}");
+                }
+            }
+            
+            return newOpponents;
+        }
+
+        /// <summary>
+        /// Placeholder for the fight sequence.
+        /// </summary>
+        private async Task FightOpponent(Opponent opponent, int currentScrollDepth)
+        {
+            LoggingService.Info("Starting fight...");
+            await SyncWindow();
+            var opponentRect = ImageAnalyzer.FindImage(Window, opponent.Snapshot);
+            if (opponentRect == default)
+            {
+                LoggingService.Warning("Could not find opponent to fight. Skipping.");
+                opponent.Status = FightStatus.Lost; // Mark as lost to avoid retries
                 return;
             }
 
-            Click(opponentButtonRect.ToPoint());
-            _currentOpponent.Status = FightStatus.Lost; // Assume lost until result is handled
+            // Find the fight button next to the opponent snapshot
+            var searchArea = new Rectangle(startBottonX, opponentRect.Top, startBottonWigth, opponentRect.Height);
+            var fightButtonRect = ImageAnalyzer.FindImage(Window, _startButtonImage, searchArea);
+
+            if (fightButtonRect != default)
+            {
+                // Після кліку можливі різні вікна: підготовка бою, попередження/діалог, сам бій тощо.
+                // Використовуємо узагальнену обробку екранів із пріоритетом у заданому порядку.
+                await ClickAndProcessScreens(
+                    fightButtonRect.ToPoint(),
+                    [
+                        ScreenDefinitionId.ClassicArenaPreparing,
+                        ScreenDefinitionId.ClassicArenaFreeTokens,
+                    ],
+                    async screenDefinition =>
+                    {
+                        switch (screenDefinition.Id)
+                        {
+                            case ScreenDefinitionId.ClassicArenaFreeTokens:
+                                // Далі ведемо стандартний сценарій запуску бою
+                                await navigator.GoToScreenAsync(screenDefinition, ScreenDefinitionId.ClassicArena);
+                                LoggingService.Info($"Scrolling back to depth {currentScrollDepth} after fight...");
+                                await ScrollToDepth(currentScrollDepth);
+                                Click(fightButtonRect.ToPoint());
+                                await ExecuteSingleRun(opponent);
+                                return false; // завершити очікування після запуску підпроцесу
+                            case ScreenDefinitionId.ClassicArenaBayTokens:
+                                await navigator.GoToScreenAsync(screenDefinition, ScreenDefinitionId.ClassicArena);
+                                // LoggingService.Info($"Scrolling back to depth {currentScrollDepth} after fight...");
+                                // await ScrollToDepth(currentScrollDepth);
+                                await sharedSettings.CancellationTokenSource.CancelAsync();
+                                return false;
+                            case ScreenDefinitionId.ClassicArenaPreparing:
+                                // Якщо одразу потрапили у бій, очікуємо його завершення у підпроцесі
+                                await ExecuteSingleRun(opponent);
+                                return false;
+                            default:
+                                // await sharedSettings.CancellationTokenSource.CancelAsync();
+                                return true;
+                        }
+                    },
+                    async definition =>
+                    {
+                        // Таймаут: спробуємо повернутись на головний екран Арени
+                        //LoggingService.Info($"Timeout after clicking Fight. Current: {definition}.");
+                        //await navigator.GoToScreenAsync(ScreenDefinitionId.ClassicArena);
+                    },
+                    timeOutMilsec: 6000,
+                    interval: 500
+                );
+            }
+            else
+            {
+                LoggingService.Warning("Could not find fight button for the opponent. It might have been defeated already.");
+                opponent.Status = FightStatus.Won; // Assume it's already won
+            }
         }
 
-        protected override void HandleRunCompletion()
+        private async Task ExecuteSingleRun(Opponent opponent)
         {
-            logger.Info("Waiting for battle completion...");
-            // NOTE: This is a placeholder for battle result handling.
-            // You need to implement logic to detect victory or defeat,
-            // and then navigate back to the arena screen.
+            await ProcessScreen([ScreenDefinitionId.ClassicArenaDefeat, ScreenDefinitionId.ClassicArenaVin, ScreenDefinitionId.ClassicArenaPreparing],
+                async screenDefinition =>
+                {
+                    switch (screenDefinition.Id)
+                    {
+                        case ScreenDefinitionId.ClassicArenaDefeat:
+                            opponent.Status = FightStatus.Lost;
+                            break;
+                        case ScreenDefinitionId.ClassicArenaVin:
+                            opponent.Status = FightStatus.Won;
+                            break;
+                        case ScreenDefinitionId.ClassicArenaPreparing:
+                            if (await navigator.IsElementVisibleAsync(screenDefinition["UncheckedAuto"]!))
+                            {
+                                await Click(screenDefinition["UncheckedAuto"]!, screenDefinition["CheckedAuto"]!);
+                            }
+                            
+                            await Click(screenDefinition["Start"]!, navigator.GetScreenDefinitionById(ScreenDefinitionId.ClassicArenaFight));
+                            
+                            opponent.Status = FightStatus.Fighting;
+                            LoggingService.Info($"Fight status {opponent.Status}.");
+                            
+                            return true;
+                        default:
+                            return true;
+                    }
 
-            // For now, we just wait a bit to simulate the fight time
-            Thread.Sleep(5000);
-            logger.Info("Battle finished, returning to lobby (simulated).");
+                    LoggingService.Info($"Fight status {opponent.Status}.");
+                    await navigator.GoToScreenAsync(screenDefinition, ScreenDefinitionId.ClassicArena);
+                    
+                    return false;
+                }, async definition =>
+                {
+                    if (definition.Id == ScreenDefinitionId.ClassicArenaFight)
+                    {
+                        await navigator.GoToScreenAsync(definition, ScreenDefinitionId.ClassicArena);
+                        
+                        LoggingService.Info($"Fight time out.");
+                        
+                        return;
+                    }
+                    
+                    LoggingService.Info($"Fight status unknown. Definition: {definition}.");
+                });
         }
+
+        /// <summary>
+        /// Прокручує список до заданої глибини від початку.
+        /// Глибина 0 = перший екран (без прокрутки), 1 = один скрол, 2 = два скроли і т.д.
+        /// </summary>
+        private async Task ScrollToDepth(int targetDepth)
+        {
+            if (targetDepth <= 0)
+            {
+                return; // Вже на початку
+            }
+
+            // Спочатку прокрутити на самий верх
+            await ScrollToTop();
+
+            // Потім прокрутити вниз потрібну кількість разів
+            for (int i = 0; i < targetDepth; i++)
+            {
+                LoggingService.Info($"Scrolling {i + 1}/{targetDepth}...");
+                MouseDrag(new Point(ScrollDragX, ScrollDragStartYBottom), new Point(ScrollDragX, ScrollDragEndYTop), 200, 500);
+                await Task.Delay(800); // Дати час на прокрутку
+            }
+
+            LoggingService.Info($"Reached target depth: {targetDepth}");
+        }
+
+        /// <summary>
+        /// Scrolls down the list until the specified opponent's snapshot is visible.
+        /// </summary>
+        private async Task ScrollToOpponent(Opponent opponent)
+        {
+            var scrollAttempts = 0;
+            
+            while (!await IsOpponentVisible(opponent.Snapshot))
+            {
+                if (scrollAttempts++ > 3)
+                {
+                    LoggingService.Error("Failed to scroll to opponent. Aborting this run.");
+                    throw new InvalidOperationException("Could not find opponent after scrolling.");
+                }
+                
+                // Perform a standard scroll down from the bottom
+                MouseDrag(new Point(ScrollDragX, ScrollDragStartYBottom), new Point(ScrollDragX, ScrollDragEndYTop), 200, 500);
+                await Task.Delay(800);
+            }
+        }
+
+        #region Helper Methods
+
+        private async Task<bool> IsOpponentVisible(Bitmap snapshot)
+        {
+            if (snapshot == null) return false;
+            
+            await SyncWindow();
+            
+            return ImageAnalyzer.FindImage(Window, snapshot, accuracy: 0.98) != default;
+        }
+
+        private async Task<List<Opponent>> GetVisibleUnfoughtOpponents()
+        {
+            var result = new List<Opponent>();
+            await SyncWindow();
+            foreach (var opponent in _opponents.Where(o => o.Status == FightStatus.NotFought))
+            {
+                if (ImageAnalyzer.FindImage(Window, opponent.Snapshot, accuracy: 0.95) != default)
+                {
+                    result.Add(opponent);
+                }
+            }
+            return result;
+        }
+        
+        private async Task<Opponent> FindLastVisibleOpponentOnScreen()
+        {
+            var result = new List<Opponent>();
+            await SyncWindow();
+            // Find ANY opponent, not just unfought ones, to get the last item on screen
+            foreach (var opponent in _opponents) 
+            {
+                if (ImageAnalyzer.FindImage(Window, opponent.Snapshot, accuracy: 0.95) != default)
+                {
+                    result.Add(opponent);
+                }
+            }
+            if (!result.Any()) return null;
+
+            return result.OrderByDescending(o => ImageAnalyzer.FindImage(Window, o.Snapshot).Y).First();
+        }
+
+        private void CleanupOpponents()
+        {
+            _opponents.ForEach(o => o.Dispose());
+            _opponents.Clear();
+            _firstOpponentSnapshot?.Dispose();
+            _firstOpponentSnapshot = null;
+        }
+
+        public void Dispose()
+        {
+            CleanupOpponents();
+        }
+
+        #endregion
     }
 }

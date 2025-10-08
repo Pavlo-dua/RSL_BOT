@@ -1,0 +1,26 @@
+{
+    "ParentId": "TechWork",
+    "Id": "TechWork",
+    "VerificationImages": [{
+        "Name": "FreeTokensVerify",
+        "Area": {
+            "X": 516,
+            "Y": 165,
+            "Width": 142,
+            "Height": 146
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\exclamation_icon.png"
+    }],
+    "UIElements": [{
+        "Name": "BayTokens",
+        "Area": {
+            "X": 705,
+            "Y": 468,
+            "Width": 60,
+            "Height": 50
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ok_button.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

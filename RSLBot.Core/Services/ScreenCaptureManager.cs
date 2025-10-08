@@ -119,7 +119,7 @@ namespace RSLBot.Core.Services
         /// </summary>
         /// <returns>A Bitmap of the captured frame.</returns>
         /// <exception cref="InvalidOperationException">Thrown if capture has not been initialized by calling EnsureCaptureIsActiveAsync first.</exception>
-        public async Task<Bitmap> CaptureFrameAsync()
+        public async Task<Bitmap?> CaptureFrameAsync()
         {
             ScreenCaptureService? service;
             lock (_lock)
@@ -132,7 +132,7 @@ namespace RSLBot.Core.Services
                 throw new InvalidOperationException("Screen capture is not active. Call EnsureCaptureIsActiveAsync before capturing a frame.");
             }
 
-            var capturedBitmap = await service.CaptureFrameAsync();
+            var capturedBitmap = await GetCaptureFrameAsync();
 
             if (capturedBitmap == null)
             {
@@ -147,6 +147,21 @@ namespace RSLBot.Core.Services
             }
 
             return (Bitmap)capturedBitmap.Clone();
+
+            async Task<Bitmap?> GetCaptureFrameAsync()
+            {
+                for (var i = 0; i < 60; i++)
+                {
+                    var capturedBmp = await service.CaptureFrameAsync();
+
+                    if (capturedBmp != null)
+                        return capturedBmp;
+                        
+                    await Task.Delay(30);
+                }
+                    
+                return null;
+            }
         }
 
         /// <summary>

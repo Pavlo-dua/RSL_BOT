@@ -1,0 +1,26 @@
+{
+    "ParentId": "NeedUpgradeGame",
+    "Id": "NeedUpgradeGame",
+    "VerificationImages": [{
+        "Name": "Verify",
+        "Area": {
+            "X": 510,
+            "Y": 370,
+            "Width": 150,
+            "Height": 113
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\need_update_game.png"
+    }],
+    "UIElements": [{
+        "Name": "upgrade",
+        "Area": {
+            "X": 510,
+            "Y": 370,
+            "Width": 150,
+            "Height": 113
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\need_update_game.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

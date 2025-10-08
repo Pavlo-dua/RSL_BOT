@@ -5,6 +5,8 @@ using RSLBot.Shared.Models;
 using RSLBot.Shared.Settings;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RSLBot.Core.Services
 {
@@ -41,7 +43,7 @@ namespace RSLBot.Core.Services
                 {
                     ParentId = dto.ParentId,
                     Id = dto.Id,
-                    VerificationImage = dto.VerificationImage,
+                    VerificationImages = dto.VerificationImages,
                     UIElements = dto.UIElements,
                 });
 

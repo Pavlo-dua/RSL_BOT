@@ -5,7 +5,10 @@ using System.Linq;
 using RSLBot.Core.CoreHelpers;
 using System.Drawing;
 using System;
+using System.Data.SqlTypes;
 using RSLBot.Shared.Settings;
+using System.Threading.Tasks;
+using RSLBot.Core.Extensions;
 
 namespace RSLBot.Core.Services
 {
@@ -52,19 +55,24 @@ namespace RSLBot.Core.Services
                 return null;
             }
 
-            if (startState.Id == targetScreenId)
+            return await GoToScreenAsync(startState, targetScreenId);
+        }
+
+        public async Task<ScreenDefinition> GoToScreenAsync(ScreenDefinition currentScreen, ScreenDefinitionId targetScreenId)
+        {
+            if (currentScreen.Id == targetScreenId)
             {
                 _logger.Info("Already on the target screen.");
                 return _screenGraph[targetScreenId];
             }
 
-            if (!_screenGraph.ContainsKey(startState.Id) || !_screenGraph.ContainsKey(targetScreenId))
+            if (!_screenGraph.ContainsKey(currentScreen.Id) || !_screenGraph.ContainsKey(targetScreenId))
             {
-                _logger.Error(null, $"Start or target screen not found in graph. Start: {startState.Id}, Target: {targetScreenId}");
+                _logger.Error(null, $"Start or target screen not found in graph. Start: {currentScreen.Id}, Target: {targetScreenId}");
                 return null;
             }
 
-            var startNode = _screenGraph[startState.Id];
+            var startNode = _screenGraph[currentScreen.Id];
             var targetNode = _screenGraph[targetScreenId];
 
             var path = FindPathBfs(startNode, targetNode);
@@ -81,7 +89,7 @@ namespace RSLBot.Core.Services
                 await ClickOnElementAsync(transition);
                 _logger.Info("Clicked on " + transition.TriggerElement.Name);
             }
-            
+
             return path[^1].TargetScreen;
         }
 
@@ -125,27 +133,38 @@ namespace RSLBot.Core.Services
         public async Task<ScreenDefinition> GetCurrentStateAsync()
         {
             _logger.Info("Identifying current screen...");
-            
-            using var screenshot = await _captureManager.CaptureFrameAsync();
-            if (screenshot == null)
-            {
-                _logger.Warning("Failed to capture screenshot.");
-                return null;
-            }
+
+            await SyncWindow();
 
             foreach (var screen in _screenGraph.Values)
             {
-                if (screen.VerificationImage == null || string.IsNullOrEmpty(screen.VerificationImage.ImageTemplatePath))
+                if (screen.VerificationImages == null || !screen.VerificationImages.Any())
                 {
                     continue;
                 }
 
                 try
                 {
-                    var template = ImageResourceManager[screen.VerificationImage.ImageTemplatePath];
-                    var foundRect = _imageAnalyzer.FindImage(screenshot, template, screen.VerificationImage.Area);
+                    bool allImagesFound = true;
+                    foreach (var verificationImage in screen.VerificationImages)
+                    {
+                        if (string.IsNullOrEmpty(verificationImage.ImageTemplatePath))
+                        {
+                            allImagesFound = false;
+                            _logger.Warning($"Verification image for screen {screen.Id} has an empty ImageTemplatePath.");
+                            break;
+                        }
+                        var template = ImageResourceManager[verificationImage.ImageTemplatePath];
+                        var foundRect = _imageAnalyzer.FindImage(Window, template, verificationImage.Area);
 
-                    if (foundRect != default(Rectangle))
+                        if (foundRect == default(Rectangle))
+                        {
+                            allImagesFound = false;
+                            break;
+                        }
+                    }
+
+                    if (allImagesFound)
                     {
                         _logger.Info($"Current screen identified as {screen.Id}");
                         return screen;
@@ -153,43 +172,86 @@ namespace RSLBot.Core.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, $"Failed to process verification image for screen {screen.Id} at path {screen.VerificationImage.ImageTemplatePath}");
+                    _logger.Error(ex, $"Failed to process verification images for screen {screen.Id}");
                 }
             }
 
             _logger.Warning("Could not identify current screen.");
             return null;
         }
-
-        public Task ClickOnElementAsync(Transition transition)
+        
+        public async Task<ScreenDefinition> GetCurrentStateAsync(List<ScreenDefinitionId> screenDefinitionIds)
         {
-            return Click(transition.TriggerElement, transition.TargetScreen.VerificationImage);
+            _logger.Info("Identifying current screen...");
+            
+            await SyncWindow();
+
+            foreach (var screen in _screenGraph.Where(sg => screenDefinitionIds.Contains(sg.Key)).Select(sg => sg.Value))
+            {
+                if (screen.VerificationImages == null || !screen.VerificationImages.Any())
+                {
+                    continue;
+                }
+
+                try
+                {
+                    bool allImagesFound = true;
+                    foreach (var verificationImage in screen.VerificationImages)
+                    {
+                        if (string.IsNullOrEmpty(verificationImage.ImageTemplatePath))
+                        {
+                            allImagesFound = false;
+                            _logger.Warning($"Verification image for screen {screen.Id} has an empty ImageTemplatePath.");
+                            break;
+                        }
+                        var template = ImageResourceManager[verificationImage.ImageTemplatePath];
+                        var foundRect = _imageAnalyzer.FindImage(Window, template, verificationImage.Area);
+
+                        if (foundRect == default(Rectangle))
+                        {
+                            allImagesFound = false;
+                            break;
+                        }
+                    }
+
+                    if (allImagesFound)
+                    {
+                        _logger.Info($"Current screen identified as {screen.Id}");
+                        return screen;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, $"Failed to process verification images for screen {screen.Id}");
+                }
+            }
+
+            _logger.Warning("Could not identify current screen.");
+            
+            return new ScreenDefinition{VerificationImages = [] };;
+        }
+
+        public ScreenDefinition GetScreenDefinitionById(ScreenDefinitionId id)
+        {
+            return _screenGraph[id];
+        }
+
+        public async Task ClickOnElementAsync(Transition transition)
+        {
+            var triggerElement = transition.TriggerElement;
+            if (string.IsNullOrEmpty(triggerElement.ImageTemplatePath))
+            {
+                _logger.Error($"Trigger element '{triggerElement.Name}' for target '{transition.TargetScreen.Id}' has no image path.");
+                return;
+            }
+            
+            await Click(triggerElement, transition.TargetScreen);
         }
 
         public async Task<bool> IsElementVisibleAsync(UIElement elementName)
         {
-            var currentScreen = await GetCurrentStateAsync();
-            if (currentScreen == null || currentScreen.Id == ScreenDefinitionId.Unknown) return false;
-
-            if (_screenGraph.TryGetValue(currentScreen.Id, out var screen))
-            {
-                var element = screen.UIElements.FirstOrDefault(e => e == elementName);
-                if (element != null)
-                {
-                    _logger.Info($"Checking visibility of '{elementName}' on screen '{screen.Id}'");
-                    // Тут буде логіка перевірки видимості елемента
-                    return true;
-                }
-            }
-            
-            _logger.Info($"Element '{elementName}' not found on screen '{currentScreen.Id}'");
-            return false;
-        }
-
-        /// <inheritdoc />
-        public bool IsElementVisible(string elementName)
-        {
-            throw new NotImplementedException();
+            _logger.Info($"Checking visibility of '{elementName.Name}'");
+            return ImageAnalyzer.FindImage((await SyncWindow())!, ImageResourceManager[elementName.ImageTemplatePath], elementName.Area) != default;
         }
     }
 }

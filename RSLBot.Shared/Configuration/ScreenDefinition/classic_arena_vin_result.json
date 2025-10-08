@@ -1,0 +1,48 @@
+{
+    "ParentId": "ClassicArena",
+    "Id": "ClassicArenaVinResult",
+    "VerificationImages": [{
+        "Name": "VinVerify1",
+        "Area": {
+            "X": 440,
+            "Y": 30,
+            "Width": 300,
+            "Height": 98
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\victory.png"
+    },
+        {
+            "Name": "VinVerify2",
+            "Area": {
+                "X": 488,
+                "Y": 570,
+                "Width": 200,
+                "Height": 60
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\back-arena.png"
+        }],
+    "UIElements": [{
+        "Name": "Continue",
+        "Area": {
+            "X": 488,
+            "Y": 570,
+            "Width": 200,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\back-arena.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "ClassicArena",
+        "TriggerElement": {
+            "Name": "Continue",
+            "Area": {
+                "X": 488,
+                "Y": 570,
+                "Width": 200,
+                "Height": 62
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\back-arena.png"
+        }
+    }]
+}

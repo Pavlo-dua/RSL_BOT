@@ -1,34 +1,35 @@
+using System;
 using System.Drawing;
 
 namespace RSLBot.Core.Scenarios.ArenaClassic
 {
     public partial class ArenaFarmingScenario
     {
-        private enum FightStatus
+        public enum FightStatus
         {
             NotFought,
+            Fighting,
             Won,
             Lost
         }
 
-        private class Opponent
+        public class Opponent : IDisposable
         {
-            public Rectangle Area { get; set; }
+            /// <summary>
+            /// A unique bitmap snapshot of the opponent's area.
+            /// </summary>
+            public Bitmap Snapshot { get; set; }
+
+            /// <summary>
+            /// The status of the fight against this opponent.
+            /// </summary>
             public FightStatus Status { get; set; }
 
-            public override bool Equals(object obj)
+            public void Dispose()
             {
-                if (obj is Opponent other)
-                {
-                    // Opponents are the same if their areas are very close.
-                    return System.Math.Abs(Area.Y - other.Area.Y) < 10;
-                }
-                return false;
-            }
-
-            public override int GetHashCode()
-            {
-                return Area.Y.GetHashCode();
+                // Safely dispose the bitmap to free up memory.
+                Snapshot?.Dispose();
+                Snapshot = null;
             }
         }
     }

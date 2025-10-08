@@ -1,0 +1,26 @@
+{
+    "ParentId": "ConnectionIssue",
+    "Id": "ConnectionIssue",
+    "VerificationImages": [{
+        "Name": "Verify",
+        "Area": {
+            "X": 462,
+            "Y": 169,
+            "Width": 250,
+            "Height": 68
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\connection_issue.png"
+    }],
+    "UIElements": [{
+        "Name": "retry",
+        "Area": {
+            "X": 650,
+            "Y": 340,
+            "Width": 136,
+            "Height": 63
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\rty_again.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

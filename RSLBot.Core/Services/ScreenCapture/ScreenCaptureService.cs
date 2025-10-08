@@ -254,6 +254,8 @@ namespace RSLBot.Core.Services
                 _framePool.FrameArrived += OnFirstFrameArrived;
 
                 _session = _framePool.CreateCaptureSession(_captureItem);
+                _session.IsCursorCaptureEnabled = false;
+                await Task.Delay(50);
                 _session.StartCapture();
 
                 // Wait for the FrameArrived event to fire, with a timeout.

@@ -3,17 +3,19 @@
     using System;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.IO;
     using Emgu.CV;
     using Emgu.CV.CvEnum;
     using Emgu.CV.OCR;
     using Emgu.CV.Structure;
+    using Emgu.CV.Util;
     using RSLBot.Shared.Settings;
 
     public class ImageAnalyzer
     {
         private readonly SharedSettings sharedSettings;
-        private static Emgu.CV.OCR.Tesseract Tesseract;
-        private static Emgu.CV.OCR.Tesseract TesseractDigit;
+        private static Emgu.CV.OCR.Tesseract? Tesseract;
+        private static Emgu.CV.OCR.Tesseract? TesseractDigit;
 
         public ImageAnalyzer(SharedSettings sharedSettings)
         {
@@ -34,34 +36,115 @@
 
         private void Init()
         {
-            if (Tesseract == null)
-            {
-                Tesseract = new Emgu.CV.OCR.Tesseract(".", sharedSettings.Language.Code.ToLower(), OcrEngineMode.TesseractOnly);
-                TesseractDigit = new Emgu.CV.OCR.Tesseract(".", sharedSettings.Language.Code.ToLower(), OcrEngineMode.TesseractOnly, "1234567890/+");
-            }
+            if (Tesseract != null && TesseractDigit != null) return;
+
+            var baseDir = AppContext.BaseDirectory;
+            // Emgu expects datapath pointing to a directory that contains the 'tessdata' folder
+            // e.g., <base>/tessdata/*.traineddata
+            var dataPath = Directory.Exists(Path.Combine(baseDir, "tessdata")) ? Path.Combine(baseDir, "tessdata") : ".";
+
+            var lang = sharedSettings.Language.Code.ToLower();
+
+            Tesseract ??= new Emgu.CV.OCR.Tesseract(dataPath, lang, OcrEngineMode.TesseractOnly);
+            TesseractDigit ??= new Emgu.CV.OCR.Tesseract(dataPath, lang, OcrEngineMode.TesseractOnly);
+
+            // Configure general engine
+            Tesseract.PageSegMode = PageSegMode.Auto;
+            Tesseract.SetVariable("preserve_interword_spaces", "1");
+
+            // Configure digit-focused engine
+            TesseractDigit.PageSegMode = PageSegMode.SingleLine;
+            TesseractDigit.SetVariable("tessedit_char_whitelist", "0123456789/+-%.,");
+            TesseractDigit.SetVariable("classify_bln_numeric_mode", "1");
+            TesseractDigit.SetVariable("preserve_interword_spaces", "1");
         }
 
         public string FindText(Bitmap raidScreenshots, bool onlyDigit = false, Rectangle imageRectangle = default)
         {
             Init();
 
-            TesseractDigit.PageSegMode = PageSegMode.SingleLine;
-            Tesseract.PageSegMode = PageSegMode.Auto;
-
-            var tesCurrent = onlyDigit ? TesseractDigit : Tesseract;
+            var tesCurrent = onlyDigit ? TesseractDigit! : Tesseract!;
 
             if (raidScreenshots == null)
                 throw new ArgumentException("Error 0x100000001");
 
-            using var img = imageRectangle == default
+            // Crop and convert to grayscale
+            using var baseGray = imageRectangle == default
                 ? raidScreenshots.ToImage<Gray, byte>()
-                : raidScreenshots.Clone(imageRectangle, PixelFormat.DontCare).ToImage<Gray, byte>().Resize(2, Inter.Nearest);
+                : raidScreenshots.Clone(imageRectangle, PixelFormat.DontCare).ToImage<Gray, byte>();
 
-            tesCurrent.SetImage(img);
+            // Preprocess: upscale, denoise, normalize contrast, threshold
+            using var scaled = baseGray.Resize(2.0, Inter.Cubic);
+
+            if (onlyDigit)
+            {
+                var mean = CvInvoke.Mean(scaled).V0;
+                if (mean < 127)
+                {
+                    CvInvoke.BitwiseNot(scaled, scaled);
+                }
+
+                // Tighten PSM to improve numeric stability
+                tesCurrent.PageSegMode = PageSegMode.SingleBlock;
+                tesCurrent.SetVariable("tessedit_char_whitelist", "0123456789/+-%.,");
+                tesCurrent.SetVariable("classify_bln_numeric_mode", "1");
+            }
+
+            tesCurrent.SetImage(scaled);
             tesCurrent.Recognize();
 
             return tesCurrent.GetUTF8Text().Trim();
-        }
+        } 
+        
+        /*public string FindText(Bitmap raidScreenshots, bool onlyDigit = false, Rectangle imageRectangle = default)
+        {
+            Init();
+
+            var tesCurrent = onlyDigit ? TesseractDigit! : Tesseract!;
+
+            if (raidScreenshots == null)
+                throw new ArgumentException("Error 0x100000001");
+
+            // Crop and convert to grayscale
+            using var baseGray = imageRectangle == default
+                ? raidScreenshots.ToImage<Gray, byte>()
+                : raidScreenshots.Clone(imageRectangle, PixelFormat.DontCare).ToImage<Gray, byte>();
+
+            // Preprocess: upscale, denoise, normalize contrast, threshold
+            using var scaled = baseGray.Resize(2.0, Inter.Cubic);
+
+            // Slight blur to reduce noise
+            CvInvoke.GaussianBlur(scaled, scaled, new Size(3, 3), 0);
+
+            // Optional: morphological opening (removed due to enum availability differences across Emgu versions)
+            // Fallback: use scaled directly as the "opened" image
+            using var opened = scaled.Clone();
+
+            // Adaptive threshold tends to work better on game UI with variable backgrounds
+            using var thresh = new Image<Gray, byte>(opened.Size);
+            CvInvoke.AdaptiveThreshold(opened, thresh, 255, AdaptiveThresholdType.GaussianC, ThresholdType.Binary, 31, 5);
+
+            // For digits, invert if necessary to ensure dark text on white background
+            // Heuristic: if mean is low, invert
+            if (onlyDigit)
+            {
+                var mean = CvInvoke.Mean(thresh).V0;
+                if (mean < 127)
+                {
+                    CvInvoke.BitwiseNot(thresh, thresh);
+                }
+
+                // Tighten PSM to improve numeric stability
+                tesCurrent.PageSegMode = PageSegMode.SingleBlock;
+                tesCurrent.SetVariable("tessedit_char_whitelist", "0123456789/+-%.,");
+                tesCurrent.SetVariable("classify_bln_numeric_mode", "1");
+            }
+
+            tesCurrent.SetImage(thresh);
+            tesCurrent.Recognize();
+
+            return tesCurrent.GetUTF8Text().Trim();
+        }*/
 
         public static Bitmap GetBitmapByRectangel(Bitmap window, Rectangle rec)
         {
@@ -211,52 +294,88 @@
             return r;
         }
 
-        public List<Rectangle> FindAllImages(Bitmap window, Bitmap part, Rectangle imageRectangle = default, double accuracy = 0.9)
+        private record Match(Rectangle Rectangle, double Score);
+
+        /// <summary>
+        /// Finds all non-overlapping occurrences of a template image within a larger image using an optimized approach.
+        /// </summary>
+        /// <param name="window">The larger image to search within.</param>
+        /// <param name="part">The template image to search for.</param>
+        /// <param name="imageRectangle">An optional region of interest within the window to perform the search.</param>
+        /// <param name="accuracy">The minimum similarity score (0.0 to 1.0) to consider a match.</param>
+        /// <returns>A list of rectangles representing the locations of found images.</returns>
+        public List<Rectangle> FindAllImages(Bitmap window, Bitmap part, Rectangle imageRectangle = default,
+            double accuracy = 0.95)
         {
             if (window == null || part == null)
-                throw new ArgumentException("Error 0x100000002");
-
-            Init();
+            {
+                throw new ArgumentNullException(window == null ? nameof(window) : nameof(part),
+                    "Input bitmaps cannot be null.");
+            }
 
             using var img = imageRectangle == default
                 ? window.ToImage<Bgra, byte>()
                 : window.Clone(imageRectangle, PixelFormat.Format24bppRgb).ToImage<Bgra, byte>();
             using var tmp = part.ToImage<Bgra, byte>();
-            var result = new List<Rectangle>();
+            using var result = new Mat();
 
-            using (var matResult = new Mat())
+            CvInvoke.MatchTemplate(img, tmp, result, TemplateMatchingType.CcorrNormed);
+
+            // --- Optimization Start ---
+
+            // Step 1: Threshold the result matrix to get a binary mask of all points above the accuracy.
+            // This is significantly faster than iterating pixel by pixel.
+            using var thresholdedResult = new Mat();
+            CvInvoke.Threshold(result, thresholdedResult, accuracy, 1.0, ThresholdType.Binary);
+
+            // FindNonZero requires a single-channel, 8-bit image.
+            using var mask = new Mat();
+            thresholdedResult.ConvertTo(mask, DepthType.Cv8U);
+
+            // Step 2: Get the coordinates of all high-confidence points in a single, fast operation.
+            using var locations = new VectorOfPoint();
+            CvInvoke.FindNonZero(mask, locations);
+
+            if (locations.Size == 0)
             {
-                CvInvoke.MatchTemplate(img, tmp, matResult, TemplateMatchingType.CcorrNormed);
-
-                double minVal = 0, maxVal = 0;
-                Point minLoc = new Point(), maxLoc = new Point();
-
-                while (true)
-                {
-                    CvInvoke.MinMaxLoc(matResult, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
-                    if (maxVal >= accuracy)
-                    {
-                        var matchRect = new Rectangle(maxLoc, tmp.Size);
-
-                        if (imageRectangle != default)
-                        {
-                            matchRect.X += imageRectangle.X;
-                            matchRect.Y += imageRectangle.Y;
-                        }
-                        result.Add(matchRect);
-
-                        // Zero out the area around the found match to prevent re-detecting it.
-                        var clearRect = new Rectangle(maxLoc.X - tmp.Width / 2, maxLoc.Y - tmp.Height / 2, tmp.Width, tmp.Height);
-                        CvInvoke.Rectangle(matResult, clearRect, new MCvScalar(0), -1);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
+                return new List<Rectangle>();
             }
 
-            return result;
+            // Step 3: Create a list of matches, retrieving the *original* score for each found location.
+            var potentialMatches = new List<Match>();
+            var resultMatrix = new Matrix<float>(result.Rows, result.Cols, result.DataPointer);
+
+            for (int i = 0; i < locations.Size; i++)
+            {
+                var point = locations[i];
+                potentialMatches.Add(new Match(
+                    new Rectangle(point, tmp.Size),
+                    resultMatrix[point.Y, point.X]
+                ));
+            }
+
+            // --- Optimization End ---
+
+            // Step 4: Sort matches by score in descending order. This part remains the same.
+            var sortedMatches = potentialMatches.OrderByDescending(m => m.Score).ToList();
+
+            // Step 5: Apply Non-Maximum Suppression (NMS). This logic is still necessary and correct.
+            var finalResults = new List<Rectangle>();
+            while (sortedMatches.Count > 0)
+            {
+                var bestMatch = sortedMatches[0];
+                finalResults.Add(bestMatch.Rectangle);
+                sortedMatches.RemoveAll(match => bestMatch.Rectangle.IntersectsWith(match.Rectangle));
+            }
+
+            // Adjust coordinates if a specific search rectangle was used.
+            if (imageRectangle != default)
+            {
+                return finalResults.Select(r =>
+                    new Rectangle(r.X + imageRectangle.X, r.Y + imageRectangle.Y, r.Width, r.Height)).ToList();
+            }
+
+            return finalResults;
         }
     }
 

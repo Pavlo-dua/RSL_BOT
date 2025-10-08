@@ -1,6 +1,6 @@
 {
     "Id": "Bastion",
-    "VerificationImage": {
+    "VerificationImages": [{
         "Name": "Bastion_Verify",
         "Area": {
             "X": 1070,
@@ -9,7 +9,7 @@
             "Height": 60
         },
         "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\fightings_button.png"
-    },
+    }],
     "UIElements": [
         {
             "Name": "Keys",

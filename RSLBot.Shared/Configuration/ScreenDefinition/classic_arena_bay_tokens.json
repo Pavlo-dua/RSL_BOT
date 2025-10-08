@@ -1,0 +1,38 @@
+{
+    "ParentId": "ClassicArena",
+    "Id": "ClassicArenaBayTokens",
+    "VerificationImages": [{
+        "Name": "FreeTokensVerify",
+        "Area": {
+            "X": 490,
+            "Y": 437,
+            "Width": 188,
+            "Height": 75
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\bay_tokens.png"
+    }],
+    "UIElements": [{
+        "Name": "BayTokens",
+        "Area": {
+            "X": 490,
+            "Y": 437,
+            "Width": 188,
+            "Height": 75
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\bay_tokens.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "ClassicArena",
+        "TriggerElement": {
+            "Name": "CloseTokens",
+            "Area": {
+                "X": 832,
+                "Y": 60,
+                "Width": 75,
+                "Height": 75
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close_bay_tokens.png"
+        }
+    }]
+}

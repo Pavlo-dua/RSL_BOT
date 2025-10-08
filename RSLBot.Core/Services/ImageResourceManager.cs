@@ -73,8 +73,7 @@ using System.Linq;
             string executionDirectory = Directory.GetParent(Path.GetFullPath(_baseDirectory))?.FullName ?? AppDomain.CurrentDomain.BaseDirectory;
 
             // Get all files from the base directory and its subdirectories.
-            var imageFiles = Directory.EnumerateFiles(_baseDirectory, "*.*", SearchOption.AllDirectories)
-                .Where(file => _supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()));
+            var imageFiles = Directory.EnumerateFiles(_baseDirectory, "*.png", SearchOption.AllDirectories);
 
             foreach (var filePath in imageFiles)
             {

@@ -1,7 +1,7 @@
 {
     "ParentId": "Bastion",
     "Id": "BastionKeys",
-    "VerificationImage": {
+    "VerificationImages": [{
         "Name": "Bastion_Verify",
         "Area": {
             "X": 705,
@@ -9,8 +9,8 @@
             "Width": 70,
             "Height": 70
         },
-        "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\basion_arena_classic_keys.png"
-    },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_arena_classic_keys.png"
+    }],
     "UIElements": [
         {
             "Name": "Keys",
@@ -35,7 +35,7 @@
                     "Width": 70,
                     "Height": 70
                 },
-                "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\basion_arena_classic_keys.png"
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_arena_classic_keys.png"
             }
         }
     ]

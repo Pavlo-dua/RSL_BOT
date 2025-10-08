@@ -1,4 +1,6 @@
 using RSLBot.Shared.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RSLBot.Core.Interfaces
 {
@@ -12,6 +14,8 @@ namespace RSLBot.Core.Interfaces
         /// </summary>
         Task<ScreenDefinition> GoToScreenAsync(ScreenDefinitionId targetScreen, bool navigateByChild = false);
 
+        Task<ScreenDefinition> GoToScreenAsync(ScreenDefinition currentScreen, ScreenDefinitionId targetScreenId);
+
         /// <summary>
         /// Визначає поточний екран гри.
         /// </summary>
@@ -24,5 +28,9 @@ namespace RSLBot.Core.Interfaces
         /// </summary>
         Task<bool> IsElementVisibleAsync(UIElement elementName);
         //bool IsElementVisible(string elementName);
+
+        Task<ScreenDefinition> GetCurrentStateAsync(List<ScreenDefinitionId> screenDefinitionIds);
+        
+        ScreenDefinition GetScreenDefinitionById(ScreenDefinitionId id);
     }
 }

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace RSLBot.Shared.Models
 {
     /// <summary>
@@ -7,7 +10,7 @@ namespace RSLBot.Shared.Models
     {
         public ScreenDefinitionId ParentId { get; set; }
         public ScreenDefinitionId Id { get; set; }
-        public required UIElement VerificationImage { get; set; }
+        public required List<UIElement> VerificationImages { get; set; } = [];
         public List<UIElement> UIElements { get; set; } = [];
         public List<ScreenDefinition> InnerScreenDefinitions { get; set; } = [];
 
@@ -20,6 +23,11 @@ namespace RSLBot.Shared.Models
             }
         }
 
+        public Transition GetTransition(ScreenDefinitionId screenDefinitionId)
+        {
+            return Transitions.Find(tr => tr.TargetScreen.Id.Equals(screenDefinitionId))!;
+        }
+        
         /// <summary>
         /// Список переходів, що містить прямі посилання на цільові екрани.
         /// </summary>

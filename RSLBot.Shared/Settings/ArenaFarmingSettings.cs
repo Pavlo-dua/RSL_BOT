@@ -8,21 +8,11 @@ namespace RSLBot.Shared.Settings
     /// </summary>
     public class ArenaFarmingSettings : ReactiveObject, IScenarioSettings
     {
-        private int _numberOfFights;
         private int _tokenPurchases;
         private bool _buyTokensWithGems;
         private bool _refreshOpponentsOnStart = true;
 
         public string ScenarioName => "ArenaFarm";
-
-        /// <summary>
-        /// Конкретна кількість боїв (0 - не враховується).
-        /// </summary>
-        public int NumberOfFights
-        {
-            get => _numberOfFights;
-            set => this.RaiseAndSetIfChanged(ref _numberOfFights, value);
-        }
 
         /// <summary>
         /// Кількість покупок мішечків (0 - необмежена кількість).
@@ -50,5 +40,6 @@ namespace RSLBot.Shared.Settings
             get => _refreshOpponentsOnStart;
             set => this.RaiseAndSetIfChanged(ref _refreshOpponentsOnStart, value);
         }
+
     }
 }

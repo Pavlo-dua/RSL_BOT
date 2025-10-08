@@ -1,16 +1,16 @@
 {
     "ParentId": "ClassicArena",
-    "Id": "ClassicArenaPreparing",
-    "VerificationImage": {
-        "Name": "Arena_SubScreen_Verify",
+    "Id": "ClassicArenaFight",
+    "VerificationImages": [{
+        "Name": "FightVerify",
         "Area": {
-            "X": 0,
-            "Y": 0,
-            "Width": 10,
-            "Height": 10
+            "X": 1100,
+            "Y": 13,
+            "Width": 60,
+            "Height": 60
         },
-        "ImageTemplatePath": "Templates\\arena\\subscreen_verify.png"
-    },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\pause.png"
+    }],
     "UIElements": [],
     "InnerScreenDefinitions": [],
     "Transitions": []

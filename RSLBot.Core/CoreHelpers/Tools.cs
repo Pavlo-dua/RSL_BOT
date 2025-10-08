@@ -333,48 +333,43 @@ namespace RSLBot.Core.CoreHelpers
 
         public void MouseDragMove(int x, int y, int x2, int y2, int waitBeforeUp)
         {
+            // 1. Гарантовано робимо вікно гри активним перед початком дій
+            SetForegroundRaid();
+            Thread.Sleep(100); // Даємо час системі на переключення вікна
+
+            // 2. Нормалізуємо координати для роботи на всьому екрані
             x = NormalizeX(x);
             y = NormalizeY(y);
-
             x2 = NormalizeX(x2);
             y2 = NormalizeY(y2);
 
+            // 3. Переміщуємо курсор в початкову точку і натискаємо
             SetCursorPos(x, y);
-
-            Thread.Sleep(500);
+            Thread.Sleep(200);
             mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-            Thread.Sleep(100);
+            Thread.Sleep(30);
 
-            var t = Math.Abs(x2 - x) / 30;
-            var tOrg = 0;
-
-            if (t != 0)
+            // 4. Імітуємо плавний рух
+            int steps = 80; // Можна погратися з цим значенням
+            for (int i = 1; i <= steps; i++)
             {
-                tOrg = (x2 - x) / t;
-
-                for (var i = 0; i < Math.Abs(x2 - x) / 30; i++)
-                {
-                    mouse_event(MOUSEEVENTF_MOVE, tOrg, y2 - y, 0, 0);
-                    Thread.Sleep(2);
-                }
+                int currentX = x + (x2 - x) * i / steps;
+                int currentY = y + (y2 - y) * i / steps;
+                
+                mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+                SetCursorPos(currentX, currentY);
+                Thread.Sleep(5); // Пауза між кроками для плавності
             }
 
-            t = Math.Abs(y2 - y) / 30;
-
-            if (t != 0)
-            {
-                tOrg = (y2 - y) / t;
-
-                for (var i = 0; i < Math.Abs(y2 - y) / 30; i++)
-                {
-                    mouse_event(MOUSEEVENTF_MOVE, x2 - x, tOrg, 0, 0);
-                    Thread.Sleep(2);
-                }
-            }
-
+            // 5. КЛЮЧОВИЙ МОМЕНТ: Завершальний етап для боротьби з інерцією
+            // Переконуємось, що курсор точно в кінцевій позиції
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+            SetCursorPos(x2, y2);
+            // Робимо значну паузу, щоб гра 100% зрозуміла, що рух зупинився
             Thread.Sleep(waitBeforeUp);
 
-            mouse_event(MOUSEEVENTF_LEFTUP, x2, y2, 0, 0);
+            // 6. Тільки після повної зупинки відпускаємо кнопку миші
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
         }
 
         public void MouseWheel(int x, int y, int wheel)
@@ -387,7 +382,7 @@ namespace RSLBot.Core.CoreHelpers
             mouse_event(MOUSEEVENTF_WHEEL, x, y, wheel, 0);
         }
 
-        public Task<Bitmap>? CaptureScreenShot()
+        public Task<Bitmap?> CaptureScreenShot()
         {
              return _screenCaptureManager.CaptureFrameAsync();
         }
