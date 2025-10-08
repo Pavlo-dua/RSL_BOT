@@ -24,10 +24,7 @@
                 </StackPanel>
             </GroupBox>
 
-            <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                     materialDesign:HintAssist.Hint="Кількість боїв"
-                     materialDesign:HintAssist.HelperText="Вкажіть кількість боїв. 0 - необмежено."
-                     Text="{Binding Settings.NumberOfFights}"/>
+            
 
             <CheckBox IsChecked="{Binding Settings.RefreshOpponentsOnStart}" 
                       Content="Оновлювати список супротивників при старті"
