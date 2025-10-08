@@ -12,7 +12,7 @@ namespace RSLBot.WPF.ViewModels
     /// </summary>
     public class LogViewModel : ReactiveViewModelBase
     {
-        public ObservableCollection<string> LogMessages { get; } = new();
+        public ObservableCollection<UILogEvent> LogMessages { get; } = new();
 
         public LogViewModel(IUILoggingBridge loggingBridge)
         {

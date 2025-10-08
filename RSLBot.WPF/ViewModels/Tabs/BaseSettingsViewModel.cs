@@ -19,7 +19,7 @@ public abstract class BaseSettingsViewModel<TScenario, TSettings> : ReactiveView
 
     // Properties to hold the scenario and settings
     protected TScenario Scenario { get; }
-    protected TSettings Settings { get; }
+    public TSettings Settings { get; }
     
     public ReactiveCommand<Unit, Unit> RunScenarioCommand { get; }
 

@@ -3,7 +3,56 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RSLBot.WPF.Services"
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="800">
-    <ListView ItemsSource="{Binding LogMessages}" FontFamily="Consolas" FontSize="12"/>
+    <ListView ItemsSource="{Binding LogMessages}" FontFamily="Consolas" FontSize="12">
+        <ListView.ItemContainerStyle>
+            <Style TargetType="ListViewItem">
+                <Setter Property="Background" Value="{x:Null}"/>
+                <Style.Triggers>
+                    <!-- Zebra striping -->
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="#0F000000"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ListView.ItemContainerStyle>
+        <ListView.ItemTemplate>
+            <DataTemplate DataType="{x:Type local:UILogEvent}">
+                <Grid Margin="2" SnapsToDevicePixels="True">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Icon by level -->
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" TextAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="ℹ"/>
+                                <Setter Property="Foreground" Value="#FFA0D911"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Level}" Value="Warning">
+                                        <Setter Property="Text" Value="⚠"/>
+                                        <Setter Property="Foreground" Value="#FFFFC107"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Level}" Value="Error">
+                                        <Setter Property="Text" Value="❗"/>
+                                        <Setter Property="Foreground" Value="#FFF44336"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Grid.Column="1" Margin="6,0" Foreground="#FF9E9E9E" Text="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock TextWrapping="Wrap" Text="{Binding Message}"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="#FF9E9E9E" FontSize="11" Text="{Binding Exception}"/>
+                    </StackPanel>
+                </Grid>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+        <ListView.AlternationCount>2</ListView.AlternationCount>
+    </ListView>
 </UserControl>

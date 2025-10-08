@@ -10,7 +10,7 @@ namespace RSLBot.Shared.Settings
     {
         private int _tokenPurchases;
         private bool _buyTokensWithGems;
-        private bool _refreshOpponentsOnStart = true;
+        private bool _refreshOpponentsOnStart = false;
 
         public string ScenarioName => "ArenaFarm";
 
