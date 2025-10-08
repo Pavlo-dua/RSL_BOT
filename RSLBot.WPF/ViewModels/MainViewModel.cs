@@ -4,6 +4,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RSLBot.Core.Interfaces;
 
 namespace RSLBot.WPF.ViewModels
 {
@@ -32,7 +33,7 @@ namespace RSLBot.WPF.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
 
-        public MainViewModel(LogViewModel logViewModel, DashboardViewModel dashboardVm, ArenaSettingsViewModel arenaVm)
+        public MainViewModel(LogViewModel logViewModel, DashboardViewModel dashboardVm, ArenaSettingsViewModel arenaVm, ILoggingService loggingService)
         {
             LogViewModel = logViewModel;
             NavigationItems = new List<INavigationItem>
@@ -61,6 +62,8 @@ namespace RSLBot.WPF.ViewModels
             // Встановлюємо початковий вибраний елемент.
             // Це автоматично викличе підписку вище і встановить початковий контент.
             SelectedItem = NavigationItems.OfType<FirstLevelNavigationItem>().FirstOrDefault(item => item.IsSelected);
+            
+            loggingService.InfoUi("Ready to use!");
         }
     }
 }

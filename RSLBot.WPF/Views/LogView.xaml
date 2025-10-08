@@ -13,7 +13,7 @@
                 <Style.Triggers>
                     <!-- Zebra striping -->
                     <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                        <Setter Property="Background" Value="#0F000000"/>
+                        <Setter Property="Background" Value="Gray"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -45,10 +45,9 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Grid.Column="1" Margin="6,0" Foreground="#FF9E9E9E" Text="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
-                    <StackPanel Grid.Column="2">
-                        <TextBlock TextWrapping="Wrap" Text="{Binding Message}"/>
-                        <TextBlock TextWrapping="Wrap" Foreground="#FF9E9E9E" FontSize="11" Text="{Binding Exception}"/>
+                    <TextBlock VerticalAlignment="Center" Grid.Column="1" Margin="6,0" Foreground="#FF9E9E9E" Text="{Binding Timestamp, StringFormat=HH:mm:ss}"/>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock  VerticalAlignment="Center" TextWrapping="Wrap" Text="{Binding Message}"/>
                     </StackPanel>
                 </Grid>
             </DataTemplate>

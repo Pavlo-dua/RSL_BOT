@@ -36,11 +36,21 @@ namespace RSLBot.WPF.Services
         // UI-intended logs: go to both UI and file
         public void Info(string message)
         {
+            logger.ForContext("SourceContext", GetCaller()).Information(message);
+        }
+
+        public void InfoUi(string message)
+        {
             PushUi(UILogLevel.Info, message);
             logger.ForContext("SourceContext", GetCaller()).Information(message);
         }
 
         public void Warning(string message)
+        {
+            logger.ForContext("SourceContext", GetCaller()).Warning(message);
+        }
+
+        public void WarningUi(string message)
         {
             PushUi(UILogLevel.Warning, message);
             logger.ForContext("SourceContext", GetCaller()).Warning(message);
@@ -86,21 +96,21 @@ namespace RSLBot.WPF.Services
 
         public void Emit(LogEvent logEvent)
         {
-            var uiLevel = logEvent.Level switch
-            {
-                LogEventLevel.Information => UILogLevel.Info,
-                LogEventLevel.Warning => UILogLevel.Warning,
-                LogEventLevel.Error => UILogLevel.Error,
-                LogEventLevel.Fatal => UILogLevel.Error,
-                _ => UILogLevel.Info
-            };
-            loggingBridge.PassMessage(new UILogEvent
-            {
-                Timestamp = logEvent.Timestamp.ToLocalTime().DateTime,
-                Level = uiLevel,
-                Message = logEvent.RenderMessage(),
-                Exception = logEvent.Exception?.ToString()
-            });
+            // var uiLevel = logEvent.Level switch
+            // {
+            //     LogEventLevel.Information => UILogLevel.Info,
+            //     LogEventLevel.Warning => UILogLevel.Warning,
+            //     LogEventLevel.Error => UILogLevel.Error,
+            //     LogEventLevel.Fatal => UILogLevel.Error,
+            //     _ => UILogLevel.Info
+            // };
+            // loggingBridge.PassMessage(new UILogEvent
+            // {
+            //     Timestamp = logEvent.Timestamp.ToLocalTime().DateTime,
+            //     Level = uiLevel,
+            //     Message = logEvent.RenderMessage(),
+            //     Exception = logEvent.Exception?.ToString()
+            // });
         }
     }
 }

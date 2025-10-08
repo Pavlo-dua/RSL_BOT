@@ -12,11 +12,14 @@ namespace RSLBot.Core.Interfaces
         /// </summary>
         void Info(string message);
 
+        void InfoUi(string message);
+        
         /// <summary>
         /// Логує попередження.
         /// </summary>
         void Warning(string message);
-
+        void WarningUi(string message);
+        
         /// <summary>
         /// Логує помилку.
         /// </summary>

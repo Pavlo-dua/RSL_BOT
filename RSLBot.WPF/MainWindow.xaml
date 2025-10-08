@@ -56,7 +56,7 @@
 
         <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="{DynamicResource MaterialDesignDivider}"/>
 
-        <views:LogView Grid.Row="2" DataContext="{Binding LogViewModel}"/>
+        <views:LogView Grid.Row="2" DataContext="{Binding LogViewModel}" BorderBrush="Aqua" BorderThickness="2"/>
     </Grid>
     
 </mde:MaterialWindow>
