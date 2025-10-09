@@ -207,13 +207,13 @@ namespace RSLBot.Core.CoreHelpers
         public Tools(ScreenCaptureManager screenCaptureManager)
         {
             _screenCaptureManager = screenCaptureManager;
-            Init();
+            Init(nHeight: 700);
         }
 
         RECT windowRect = new RECT();
         RECT windowPos = new RECT();
-
-        public void Init()
+        
+        public void Init(int nWidth = 1173, int nHeight = 652)
         {
             hWnd = nint.Zero;
 
@@ -227,12 +227,12 @@ namespace RSLBot.Core.CoreHelpers
                 }
             }
 
-            SetRaidDefaultSize();
+            SetRaidDefaultSize(nWidth, nHeight);
         }
-
-        public void SetRaidDefaultSize()
+        
+        public void SetRaidDefaultSize(int nWidth, int nHeight)
         {
-            ClientResize(hWnd, 1173, 652);
+            ClientResize(hWnd, nWidth, nHeight);
 
             //MoveWindow(hWnd, 0, 0, 1189, 691, true);
 

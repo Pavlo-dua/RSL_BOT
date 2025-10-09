@@ -12,7 +12,7 @@
         "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
     }],
     "UIElements": [{
-        "Name": "BayTokens",
+        "Name": "BuyTokens",
         "Area": {
             "X": 490,
             "Y": 437,
@@ -25,7 +25,7 @@
     "Transitions": [{
         "TargetScreenId": "ClassicArena",
         "TriggerElement": {
-            "Name": "BayTokens",
+            "Name": "BuyTokens",
             "Area": {
                 "X": 490,
                 "Y": 437,

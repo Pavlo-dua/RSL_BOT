@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RSLBot.Core.Interfaces;
 using RSLBot.Core.Services;
-
 using RSLBot.WPF.Services;
 using RSLBot.WPF.ViewModels;
 using RSLBot.WPF.ViewModels.Tabs;
@@ -12,6 +11,7 @@ using System.Reactive.Concurrency;
 using RSLBot.Core.CoreHelpers;
 using RSLBot.Shared.Settings;
 using RSLBot.Core.Scenarios.ArenaClassic;
+using RSLBot.Core.Scenarios.ArenaTagClassic;
 
 namespace RSLBot.WPF
 {
@@ -50,6 +50,7 @@ namespace RSLBot.WPF
 
             // --- СЦЕНАРІЇ ---
             services.AddTransient<ArenaFarmingScenario>();
+            services.AddTransient<ArenaTagFarmingScenario>();
 
             // --- VIEW MODELS ---
             services.AddSingleton<LogViewModel>();

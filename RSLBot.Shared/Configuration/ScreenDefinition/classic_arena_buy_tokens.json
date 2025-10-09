@@ -1,6 +1,6 @@
 {
     "ParentId": "ClassicArena",
-    "Id": "ClassicArenaBayTokens",
+    "Id": "ClassicArenaBuyTokens",
     "VerificationImages": [{
         "Name": "FreeTokensVerify",
         "Area": {
@@ -9,17 +9,17 @@
             "Width": 188,
             "Height": 75
         },
-        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\bay_tokens.png"
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\buy_tokens.png"
     }],
     "UIElements": [{
-        "Name": "BayTokens",
+        "Name": "BuyTokens",
         "Area": {
             "X": 490,
             "Y": 437,
             "Width": 188,
             "Height": 75
         },
-        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\bay_tokens.png"
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\buy_tokens.png"
     }],
     "InnerScreenDefinitions": [],
     "Transitions": [{
@@ -32,7 +32,7 @@
                 "Width": 75,
                 "Height": 75
             },
-            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close_bay_tokens.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\close_buy_tokens.png"
         }
     }]
 }

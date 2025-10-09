@@ -142,13 +142,13 @@
     <None Update="Configuration\ScreenDefinition\Templates\add_resources.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Configuration\ScreenDefinition\classic_arena_bay_tokens.json">
+    <None Update="Configuration\ScreenDefinition\classic_arena_buy_tokens.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Configuration\ScreenDefinition\Templates\ArenaClassic\bay_tokens.png">
+    <None Update="Configuration\ScreenDefinition\Templates\ArenaClassic\buy_tokens.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Configuration\ScreenDefinition\Templates\ArenaClassic\close_bay_tokens.png">
+    <None Update="Configuration\ScreenDefinition\Templates\ArenaClassic\close_buy_tokens.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Configuration\ScreenDefinition\need_upgrade_game.json">

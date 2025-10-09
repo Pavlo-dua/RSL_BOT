@@ -14,7 +14,6 @@ public enum ScreenDefinitionId
     ClassicArenaFight,
     ClassicArenaFreeTokens,
     ClassicArenaBuyTokens,
-    ClassicArenaBayTokens,
     NeedUpgradeGame,
     ConnectionIssue,
     TechWork

@@ -12,7 +12,7 @@
         "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\exclamation_icon.png"
     }],
     "UIElements": [{
-        "Name": "BayTokens",
+        "Name": "BuyTokens",
         "Area": {
             "X": 705,
             "Y": 468,

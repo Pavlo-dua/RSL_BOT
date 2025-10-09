@@ -45,8 +45,10 @@ namespace RSLBot.Core.Scenarios
         /// </summary>
         protected virtual Task Prepare()
         {
-            tools.Init();
-
+	        var screen = navigator.GetScreenDefinitionById(MainFarmingScreenId);
+	        
+            tools.Init(screen.WindowWidth, screen.WindowHeight);
+            
             return navigator.GoToScreenAsync(MainFarmingScreenId);
         }
 

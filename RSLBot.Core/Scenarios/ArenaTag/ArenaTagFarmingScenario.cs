@@ -11,9 +11,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using RSLBot.Core.Extensions;
 
-namespace RSLBot.Core.Scenarios.ArenaClassic
+namespace RSLBot.Core.Scenarios.ArenaTagClassic
 {
-    public partial class ArenaFarmingScenario : BaseFarmingScenario<ArenaFarmingSettings>
+    public partial class ArenaTagFarmingScenario : BaseFarmingScenario<ArenaFarmingSettings>
     {
         // Note: ILoggingService is available as 'logger' in the base class 'Manipulation'
         protected override ScreenDefinitionId MainFarmingScreenId => ScreenDefinitionId.ClassicArena;
@@ -41,10 +41,8 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
         private const int startBottonWigth = 200;
         private readonly Rectangle _scrollCheckRect = new Rectangle(228, 540, 207, 88);
         private int TokenPuchesed = 0;
-        private int won = 0;
-        private int lost = 0;
         
-        public ArenaFarmingScenario(INavigator navigator, ArenaFarmingSettings settings, ILoggingService logger, Tools tools, ImageAnalyzer imageAnalyzer, SharedSettings sharedSettings, ImageResourceManager imageResourceManager)
+        public ArenaTagFarmingScenario(INavigator navigator, ArenaFarmingSettings settings, ILoggingService logger, Tools tools, ImageAnalyzer imageAnalyzer, SharedSettings sharedSettings, ImageResourceManager imageResourceManager)
             : base(navigator, settings, sharedSettings, tools, imageAnalyzer, imageResourceManager, logger)
         {
         }
@@ -75,17 +73,14 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                 
                 tokens = await GetTokenCount();
                 
-                LoggingService.InfoUi($"Identified {tokens}/10 tokens.");
+                LoggingService.Info($"Identified {tokens}/10 tokens.");
             }
             
             var needRefresh = settings.RefreshOpponentsOnStart;
-            var internalNeedRefresh = false;
-            
             
             while (true)
             {
-               
-                LoggingService.InfoUi($"Starting new cycle through opponent list.");
+                LoggingService.Info($"Starting new cycle through opponent list.");
                 _firstOpponentSnapshot = null;
                 
                 if (IsCancellationRequested()) break;
@@ -96,13 +91,11 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                     
                     if (!await navigator.IsElementVisibleAsync(ca["Refresh"]))
                     {
-                        await WaitImage(ca["Refresh"], 105, 1000 * 10);
+                        await WaitImage(ca["Refresh"], 80, 1000 * 10);
                     }
 
                     await Click(ca["Refresh"], ca["Refresh_dis"]);
                 }
-
-                internalNeedRefresh = true;
                 
                 // Крок 1: Прокрутити на самий верх
                 await ScrollToTop();
@@ -174,8 +167,7 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                         await SyncWindow();
                         if (_firstOpponentSnapshot != null && !await IsOpponentVisible(_firstOpponentSnapshot))
                         {
-                            LoggingService.WarningUi("List was completely reset (league change). Restarting from top.");
-                            internalNeedRefresh = false;
+                            LoggingService.Info("List was completely reset (league change). Restarting from top.");
                             goto restart_full_cycle;
                         }
 
@@ -241,10 +233,10 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                     }
                 }
 
-                needRefresh = internalNeedRefresh && _opponents.Any(op => op.Status == FightStatus.Lost);
+                needRefresh = _opponents.Any(op => op.Status != FightStatus.Won);
             }
 
-            LoggingService.InfoUi($"Arena scenario finished. Виграли: {won} Програли: {lost}. Коефіцієнт: {(won+lost == 0 ? 0 : won/(won+lost)*100)}%");
+            LoggingService.Info("Arena scenario finished.");
         }
 
         private async Task<bool> TryGetTokens()
@@ -259,7 +251,6 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                     {
                         case ScreenDefinitionId.ClassicArenaFreeTokens:
                             await Click(definition["BuyTokens"], navigator.GetScreenDefinitionById(ScreenDefinitionId.ClassicArena));
-                            LoggingService.InfoUi("Додаткові монети Арени отримано");
                             result = true;
                             break;
                         case ScreenDefinitionId.ClassicArenaBuyTokens:
@@ -329,7 +320,7 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                 MouseDrag(new Point(ScrollDragX, ScrollDragStartYBottomUp), new Point(ScrollDragX, ScrollDragEndYBottomUp), 200, 500);
             }
             
-            LoggingService.WarningUi("Could not determine if top of the list was reached.");
+            LoggingService.Warning("Could not determine if top of the list was reached.");
         }
 
         /// <summary>
@@ -389,12 +380,12 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
         /// </summary>
         private async Task FightOpponent(Opponent opponent, int currentScrollDepth)
         {
-            LoggingService.InfoUi("Starting fight...");
+            LoggingService.Info("Starting fight...");
             await SyncWindow();
             var opponentRect = ImageAnalyzer.FindImage(Window, opponent.Snapshot);
             if (opponentRect == default)
             {
-                LoggingService.WarningUi("Could not find opponent to fight. Skipping.");
+                LoggingService.Warning("Could not find opponent to fight. Skipping.");
                 opponent.Status = FightStatus.Lost; // Mark as lost to avoid retries
                 return;
             }
@@ -421,7 +412,6 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                             case ScreenDefinitionId.ClassicArenaFreeTokens:
                                 // Далі ведемо стандартний сценарій запуску бою
                                 await navigator.GoToScreenAsync(screenDefinition, ScreenDefinitionId.ClassicArena);
-                                LoggingService.InfoUi("Додано безкоштовних токенів Арени");
                                 LoggingService.Info($"Scrolling back to depth {currentScrollDepth} after fight...");
                                 await ScrollToDepth(currentScrollDepth);
                                 Click(fightButtonRect.ToPoint());
@@ -479,10 +469,8 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                     {
                         case ScreenDefinitionId.ClassicArenaDefeat:
                             opponent.Status = FightStatus.Lost;
-                            LoggingService.InfoUi($"Програли :(. Разів: {++lost}");
                             break;
                         case ScreenDefinitionId.ClassicArenaVin:
-                            LoggingService.InfoUi($"Перемога! Разів: {++won}");
                             opponent.Status = FightStatus.Won;
                             break;
                         case ScreenDefinitionId.ClassicArenaPreparing:
@@ -511,7 +499,7 @@ namespace RSLBot.Core.Scenarios.ArenaClassic
                     {
                         await navigator.GoToScreenAsync(definition, ScreenDefinitionId.ClassicArena);
                         
-                        LoggingService.WarningUi($"Fight time out.");
+                        LoggingService.Info($"Fight time out.");
                         
                         return;
                     }

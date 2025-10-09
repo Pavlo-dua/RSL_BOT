@@ -8,6 +8,8 @@ namespace RSLBot.Core.Models.Dto
     {
         public ScreenDefinitionId ParentId { get; set; }
         public ScreenDefinitionId Id { get; set; }
+        public int WindowHeight { get; set; }
+        public int WindowWidth { get; set; }
         public List<UIElement> VerificationImages { get; set; } = [];
         public List<UIElement> UIElements { get; set; } = [];
         public List<ScreenDefinitionId> InnerScreenDefinitions { get; set; } = [];

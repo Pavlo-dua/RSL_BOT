@@ -10,6 +10,8 @@ namespace RSLBot.Shared.Models
     {
         public ScreenDefinitionId ParentId { get; set; }
         public ScreenDefinitionId Id { get; set; }
+        public int WindowHeight { get; set; }
+        public int WindowWidth { get; set; }
         public required List<UIElement> VerificationImages { get; set; } = [];
         public List<UIElement> UIElements { get; set; } = [];
         public List<ScreenDefinition> InnerScreenDefinitions { get; set; } = [];
