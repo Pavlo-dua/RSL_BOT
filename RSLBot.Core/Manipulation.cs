@@ -215,7 +215,7 @@ namespace RSLBot.Core
                         break;
                     }
                     var template = ImageResourceManager[element.ImageTemplatePath];
-                    var rec = ImageAnalyzer.FindImage(Window, template, element.Area);
+                    var rec = ImageAnalyzer.FindImage(Window, template, element.Area, 0.98);
                     if (rec == default)
                     {
                         allFound = false;
@@ -323,7 +323,7 @@ namespace RSLBot.Core
             return await Click(element, waitingScreen.VerificationImages);
         }
         
-        public async Task<List<Rectangle>> FindAllImages(Bitmap img, Rectangle region = default, double accuracy = 0.95)
+        public async Task<List<Rectangle>> FindAllImages(Bitmap img, Rectangle region = default, double accuracy = 0.98)
         {
             return ImageAnalyzer.FindAllImages(await CaptureScreenShot(), img, region, accuracy);
         }

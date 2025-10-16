@@ -4,9 +4,9 @@
     "VerificationImages": [{
         "Name": "Bastion_Verify",
         "Area": {
-            "X": 705,
+            "X": 670,
             "Y": 50,
-            "Width": 70,
+            "Width": 200,
             "Height": 70
         },
         "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_arena_classic_keys.png"
@@ -15,10 +15,10 @@
         {
             "Name": "Keys",
             "Area": {
-                "X": 100,
-                "Y": 100,
-                "Width": 150,
-                "Height": 50
+                "X": 950,
+                "Y": 0,
+                "Width": 80,
+                "Height": 40
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_keys.png"
         }
@@ -30,12 +30,25 @@
             "TriggerElement": {
                 "Name": "ClassicArenaKeys",
                 "Area": {
-                    "X": 705,
+                    "X": 670,
                     "Y": 50,
-                    "Width": 70,
+                    "Width": 200,
                     "Height": 70
                 },
                 "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_arena_classic_keys.png"
+            }
+        },
+        {
+            "TargetScreenId": "TagArena",
+            "TriggerElement": {
+                "Name": "TagArenaKeys",
+                "Area": {
+                    "X": 700,
+                    "Y": 110,
+                    "Width": 150,
+                    "Height": 60
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\arena_tag_tokens.png"
             }
         }
     ]

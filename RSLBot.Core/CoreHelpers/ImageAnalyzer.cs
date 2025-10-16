@@ -256,7 +256,7 @@
 
         //}
 
-        public Rectangle FindImage(Bitmap window, Bitmap part, Rectangle imageRectangle = default, double accuracy = 0.988)
+        public Rectangle FindImage(Bitmap window, Bitmap part, Rectangle imageRectangle = default, double accuracy = 0.98)
         {
             if (window == null || part == null)
                 throw new ArgumentException("Error 0x100000002");

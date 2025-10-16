@@ -4,7 +4,8 @@ public interface IScenario
 {
     public enum ScenarioId
     {
-        Arena
+        ClassicArena,
+        TagArena
     }
 
     ScenarioId Id { get; }

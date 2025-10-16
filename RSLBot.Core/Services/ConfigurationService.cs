@@ -43,6 +43,8 @@ namespace RSLBot.Core.Services
                 {
                     ParentId = dto.ParentId,
                     Id = dto.Id,
+                    WindowHeight = dto.WindowHeight,
+                    WindowWidth = dto.WindowWidth,
                     VerificationImages = dto.VerificationImages,
                     UIElements = dto.UIElements,
                 });

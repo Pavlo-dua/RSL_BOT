@@ -1,16 +1,16 @@
 {
-    "Id": "ClassicArena",
+    "Id": "TagArena",
     "WindowHeight" : 652,
     "WindowWidth" : 1173,
     "VerificationImages": [{
         "Name": "ArenaVerify",
         "Area": {
-            "X": 628,
+            "X": 879,
             "Y": 0,
             "Width": 100,
-            "Height": 60
+            "Height": 50
         },
-        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\arena_classic_ver.png"
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaTag\\ver_token.png"
     }],
     "UIElements": [
         {
@@ -41,7 +41,7 @@
                 "Width": 0,
                 "Height": 0
             },
-            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\arena_classic_start.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaTag\\start_fight.png"
         },
         {
             "Name": "Close",
@@ -56,10 +56,10 @@
         {
             "Name": "add_tokens",
             "Area": {
-                "X": 800,
-                "Y": 10,
-                "Width": 80,
-                "Height": 40
+                "X": 772,
+                "Y": 0,
+                "Width": 140,
+                "Height": 50
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\add_resources.png"
         }

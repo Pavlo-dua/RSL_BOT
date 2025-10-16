@@ -1,0 +1,17 @@
+{
+    "ParentId": "TagArena",
+    "Id": "TagArenaFight",
+    "VerificationImages": [{
+        "Name": "FightVerify",
+        "Area": {
+            "X": 1100,
+            "Y": 13,
+            "Width": 60,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\pause.png"
+    }],
+    "UIElements": [],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

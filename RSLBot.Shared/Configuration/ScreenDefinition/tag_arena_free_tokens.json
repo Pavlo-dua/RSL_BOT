@@ -1,0 +1,38 @@
+{
+    "ParentId": "TagArena",
+    "Id": "TagArenaFreeTokens",
+    "VerificationImages": [{
+        "Name": "FreeTokensVerify",
+        "Area": {
+            "X": 490,
+            "Y": 437,
+            "Width": 188,
+            "Height": 150
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
+    }],
+    "UIElements": [{
+        "Name": "BuyTokens",
+        "Area": {
+            "X": 490,
+            "Y": 437,
+            "Width": 188,
+            "Height": 150
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "TagArena",
+        "TriggerElement": {
+            "Name": "BuyTokens",
+            "Area": {
+                "X": 490,
+                "Y": 437,
+                "Width": 188,
+                "Height": 150
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
+        }
+    }]
+}

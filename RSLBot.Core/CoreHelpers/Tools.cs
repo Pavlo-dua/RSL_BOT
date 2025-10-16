@@ -207,7 +207,7 @@ namespace RSLBot.Core.CoreHelpers
         public Tools(ScreenCaptureManager screenCaptureManager)
         {
             _screenCaptureManager = screenCaptureManager;
-            Init(nHeight: 700);
+            Init();
         }
 
         RECT windowRect = new RECT();

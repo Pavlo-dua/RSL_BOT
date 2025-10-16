@@ -1,0 +1,48 @@
+{
+    "ParentId": "TagArena",
+    "Id": "TagArenaVinResult",
+    "VerificationImages": [{
+        "Name": "VinVerify1",
+        "Area": {
+            "X": 525,
+            "Y": 0,
+            "Width": 130,
+            "Height": 36
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaTag\\vin_res1.png"
+    },
+    {
+        "Name": "VinVerify2",
+        "Area": {
+            "X": 488,
+            "Y": 570,
+            "Width": 200,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaTag\\vin_back_arena.png"
+    }],
+    "UIElements": [{
+        "Name": "Continue",
+        "Area": {
+            "X": 488,
+            "Y": 570,
+            "Width": 200,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaTag\\vin_back_arena.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "TagArena",
+        "TriggerElement": {
+            "Name": "Continue",
+            "Area": {
+                "X": 488,
+                "Y": 570,
+                "Width": 200,
+                "Height": 62
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaTag\\vin_back_arena.png"
+        }
+    }]
+}

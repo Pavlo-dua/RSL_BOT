@@ -8,6 +8,7 @@ using RSLBot.Core.CoreHelpers;
 using RSLBot.Core.Interfaces;
 using RSLBot.Core.Services;
 using RSLBot.Shared.Interfaces;
+using RSLBot.Shared.Settings;
 using AppContext = RSLBot.Core.Services.AppContext;
 
 namespace RSLBot.WPF.ViewModels.Tabs;
@@ -22,13 +23,14 @@ public abstract class BaseSettingsViewModel<TScenario, TSettings> : ReactiveView
     public TSettings Settings { get; }
     
     public ReactiveCommand<Unit, Unit> RunScenarioCommand { get; }
+    public ReactiveCommand<Unit, Unit> CancelScenarioCommand { get; }
 
     /// <summary>
     /// Initializes a new instance of the BaseSettingsViewModel class.
     /// </summary>
     /// <param name="scenario">The scenario instance.</param>
     /// <param name="settings">The settings for the scenario.</param>
-    protected BaseSettingsViewModel(TScenario scenario, TSettings settings, Tools tool, ScreenCaptureManager manager)
+    protected BaseSettingsViewModel(TScenario scenario, TSettings settings, Tools tool, ScreenCaptureManager manager, SharedSettings sharedSettings)
     {
         this.tool = tool;
         _manager = manager;
@@ -37,6 +39,7 @@ public abstract class BaseSettingsViewModel<TScenario, TSettings> : ReactiveView
         this.Settings = settings;
         
         RunScenarioCommand = ReactiveCommand.CreateFromTask(RunScenarioAsync, outputScheduler: RxApp.MainThreadScheduler);
+        CancelScenarioCommand = ReactiveCommand.Create(() => { sharedSettings.CancellationTokenSource.Cancel(); });
         
         RunScenarioCommand.ThrownExceptions
             .Subscribe(ex =>

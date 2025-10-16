@@ -33,13 +33,14 @@ namespace RSLBot.WPF.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
 
-        public MainViewModel(LogViewModel logViewModel, DashboardViewModel dashboardVm, ArenaSettingsViewModel arenaVm, ILoggingService loggingService)
+        public MainViewModel(LogViewModel logViewModel, DashboardViewModel dashboardVm, ArenaSettingsViewModel arenaVm, TagArenaSettingsViewModel tagArenaVm, ILoggingService loggingService)
         {
             LogViewModel = logViewModel;
             NavigationItems = new List<INavigationItem>
             {
                 new FirstLevelNavigationItem { Label = "Dashboard", Icon = PackIconKind.ViewDashboard, IsSelected = true },
-                new FirstLevelNavigationItem { Label = "Arena", Icon = PackIconKind.ShieldHalfFull}
+                new FirstLevelNavigationItem { Label = "Classic Arena", Icon = PackIconKind.ShieldSword},
+                new FirstLevelNavigationItem { Label = "Tag Arena", Icon = PackIconKind.ShieldStar}
             };
 
             // Підписуємося на зміни SelectedItem і оновлюємо контент
@@ -48,13 +49,17 @@ namespace RSLBot.WPF.ViewModels
                 {
                     if (selected is FirstLevelNavigationItem item)
                     {
-                        if (item.Label == "Dashboard")
+                        switch (item.Label)
                         {
-                            CurrentContentViewModel = dashboardVm;
-                        }
-                        else if (item.Label == "Arena")
-                        {
-                            CurrentContentViewModel = arenaVm;
+                            case "Dashboard":
+                                CurrentContentViewModel = dashboardVm;
+                                break;
+                            case "Classic Arena":
+                                CurrentContentViewModel = arenaVm;
+                                break;
+                            case "Tag Arena":
+                                CurrentContentViewModel = tagArenaVm;
+                                break;
                         }
                     }
                 });

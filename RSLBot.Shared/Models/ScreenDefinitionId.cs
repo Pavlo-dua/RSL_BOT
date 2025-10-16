@@ -16,5 +16,14 @@ public enum ScreenDefinitionId
     ClassicArenaBuyTokens,
     NeedUpgradeGame,
     ConnectionIssue,
-    TechWork
+    TechWork,
+    TagArena,
+    TagArenaPreparing,
+    TagArenaDefeat,
+    TagArenaDefeatResult,
+    TagArenaVin,
+    TagArenaVinResult,
+    TagArenaFight,
+    TagArenaFreeTokens,
+    TagArenaBuyTokens,
 }

@@ -12,7 +12,7 @@ namespace RSLBot.Core.Interfaces
         /// <summary>
         /// Переходить до вказаного екрана, автоматично знаходячи шлях.
         /// </summary>
-        Task<ScreenDefinition> GoToScreenAsync(ScreenDefinitionId targetScreen, bool navigateByChild = false);
+        Task<ScreenDefinition?> GoToScreenAsync(ScreenDefinitionId targetScreen, bool navigateByChild = false);
 
         Task<ScreenDefinition> GoToScreenAsync(ScreenDefinition currentScreen, ScreenDefinitionId targetScreenId);
 

@@ -50,6 +50,9 @@
                     <DataTemplate DataType="{x:Type tabs:ArenaSettingsViewModel}">
                         <views:ArenaSettingsView />
                     </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:TagArenaSettingsViewModel}">
+                        <views:TagArenaSettingsView />
+                    </DataTemplate>
                 </ContentControl.Resources>
             </ContentControl>
         </Grid>

@@ -86,8 +86,15 @@ namespace RSLBot.Core.Services
             _logger.Info($"Path found: {string.Join(" -> ", path.Select(t => t.TargetScreen.Id))}. Executing...");
             foreach (var transition in path)
             {
-                await ClickOnElementAsync(transition);
-                _logger.Info("Clicked on " + transition.TriggerElement.Name);
+                if (await ClickOnElementAsync(transition))
+                {
+                    _logger.Info("Clicked on " + transition.TriggerElement.Name);
+                }
+                else
+                {
+                    _logger.Error(new InvalidOperationException("Path not found"), $"Path from '{startNode.Id}' to '{targetNode.Id}' not found!");
+                    return null;
+                }
             }
 
             return path[^1].TargetScreen;
@@ -236,16 +243,16 @@ namespace RSLBot.Core.Services
             return _screenGraph[id];
         }
 
-        public async Task ClickOnElementAsync(Transition transition)
+        public async Task<bool> ClickOnElementAsync(Transition transition)
         {
             var triggerElement = transition.TriggerElement;
             if (string.IsNullOrEmpty(triggerElement.ImageTemplatePath))
             {
                 _logger.Error($"Trigger element '{triggerElement.Name}' for target '{transition.TargetScreen.Id}' has no image path.");
-                return;
+                return false;
             }
             
-            await Click(triggerElement, transition.TargetScreen);
+            return await Click(triggerElement, transition.TargetScreen) != default;
         }
 
         public async Task<bool> IsElementVisibleAsync(UIElement elementName)

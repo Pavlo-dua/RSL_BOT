@@ -17,7 +17,7 @@ namespace RSLBot.WPF.ViewModels.Tabs
     /// </summary>
     public class ArenaSettingsViewModel : BaseSettingsViewModel<ArenaFarmingScenario, ArenaFarmingSettings>
     {
-        public ArenaSettingsViewModel(ArenaFarmingScenario scenarioExecutor, ArenaFarmingSettings settings, Tools tool, ScreenCaptureManager screenCaptureManager):base(scenarioExecutor, settings, tool, screenCaptureManager)
+        public ArenaSettingsViewModel(ArenaFarmingScenario scenarioExecutor, ArenaFarmingSettings settings, Tools tool, ScreenCaptureManager screenCaptureManager, SharedSettings sharedSettings):base(scenarioExecutor, settings, tool, screenCaptureManager, sharedSettings)
         {
             this.WhenAnyValue(x => x.Settings.BuyTokensWithGems)
                 .Subscribe(buyTokens =>

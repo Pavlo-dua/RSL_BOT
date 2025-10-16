@@ -1,0 +1,48 @@
+{
+    "ParentId": "TagArena",
+    "Id": "TagArenaDefeatResult",
+    "VerificationImages": [{
+        "Name": "DefeatVerify1",
+        "Area": {
+            "X": 525,
+            "Y": 0,
+            "Width": 130,
+            "Height": 36
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaTag\\defeat_result_ver1.png"
+    },
+    {
+        "Name": "DefeatVerify2",
+        "Area": {
+            "X": 488,
+            "Y": 570,
+            "Width": 200,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaTag\\lost_back_arena.png"
+    }],
+    "UIElements": [{
+        "Name": "Continue",
+        "Area": {
+            "X": 488,
+            "Y": 570,
+            "Width": 200,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaTag\\lost_back_arena.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "TagArena",
+        "TriggerElement": {
+            "Name": "Continue",
+            "Area": {
+                "X": 488,
+                "Y": 570,
+                "Width": 200,
+                "Height": 60
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaTag\\lost_back_arena.png"
+        }
+    }]
+}

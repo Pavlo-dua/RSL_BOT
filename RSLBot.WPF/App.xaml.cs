@@ -11,7 +11,7 @@ using System.Reactive.Concurrency;
 using RSLBot.Core.CoreHelpers;
 using RSLBot.Shared.Settings;
 using RSLBot.Core.Scenarios.ArenaClassic;
-using RSLBot.Core.Scenarios.ArenaTagClassic;
+using RSLBot.Core.Scenarios.ArenaTag;
 
 namespace RSLBot.WPF
 {
@@ -56,6 +56,7 @@ namespace RSLBot.WPF
             services.AddSingleton<LogViewModel>();
             services.AddTransient<DashboardViewModel>();
             services.AddTransient<ArenaSettingsViewModel>();
+            services.AddTransient<TagArenaSettingsViewModel>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<MainWindow>();
 

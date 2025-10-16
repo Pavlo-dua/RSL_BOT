@@ -16,8 +16,8 @@
             "Area": {
                 "X": 950,
                 "Y": 0,
-                "Width": 60,
-                "Height": 60
+                "Width": 80,
+                "Height": 40
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_keys.png"
         }
@@ -31,8 +31,8 @@
                 "Area": {
                     "X": 950,
                     "Y": 0,
-                    "Width": 60,
-                    "Height": 60
+                    "Width": 80,
+                    "Height": 40
                 },
                 "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\bastion_keys.png"
             }

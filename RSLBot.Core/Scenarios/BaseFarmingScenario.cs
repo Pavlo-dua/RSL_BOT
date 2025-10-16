@@ -43,13 +43,15 @@ namespace RSLBot.Core.Scenarios
         /// <summary>
         /// Переходить на стартовий екран фарму.
         /// </summary>
-        protected virtual Task Prepare()
+        protected virtual async Task Prepare()
         {
-	        var screen = navigator.GetScreenDefinitionById(MainFarmingScreenId);
-	        
-            tools.Init(screen.WindowWidth, screen.WindowHeight);
-            
-            return navigator.GoToScreenAsync(MainFarmingScreenId);
+	        if (await navigator.GoToScreenAsync(MainFarmingScreenId) == null)
+	        {
+		        await CancellationTokenSource.CancelAsync();
+		        return;
+	        }
+
+	        tools.Init();
         }
 
         private async Task MonitoringUnexpectedEvent()
