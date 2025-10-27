@@ -33,14 +33,23 @@ namespace RSLBot.WPF.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
 
-        public MainViewModel(LogViewModel logViewModel, DashboardViewModel dashboardVm, ArenaSettingsViewModel arenaVm, TagArenaSettingsViewModel tagArenaVm, ILoggingService loggingService)
+        public MainViewModel(
+            LogViewModel logViewModel, 
+            DashboardViewModel dashboardVm, 
+            ArenaSettingsViewModel arenaVm, 
+            TagArenaSettingsViewModel tagArenaVm,
+            TwinsSettingsViewModel twinsVm,
+            SettingsViewModel settingsVm,
+            ILoggingService loggingService)
         {
             LogViewModel = logViewModel;
             NavigationItems = new List<INavigationItem>
             {
-                new FirstLevelNavigationItem { Label = "Dashboard", Icon = PackIconKind.ViewDashboard, IsSelected = true },
-                new FirstLevelNavigationItem { Label = "Classic Arena", Icon = PackIconKind.ShieldSword},
-                new FirstLevelNavigationItem { Label = "Tag Arena", Icon = PackIconKind.ShieldStar}
+                new FirstLevelNavigationItem { Label = "Послідовність", Icon = PackIconKind.PlaylistPlay, IsSelected = true },
+                new FirstLevelNavigationItem { Label = "Класична Арена", Icon = PackIconKind.ShieldSword},
+                new FirstLevelNavigationItem { Label = "Тег Арена", Icon = PackIconKind.ShieldStar},
+                new FirstLevelNavigationItem { Label = "Твінс", Icon = PackIconKind.AccountMultiple},
+                new FirstLevelNavigationItem { Label = "Налаштування", Icon = PackIconKind.Cog}
             };
 
             // Підписуємося на зміни SelectedItem і оновлюємо контент
@@ -51,14 +60,20 @@ namespace RSLBot.WPF.ViewModels
                     {
                         switch (item.Label)
                         {
-                            case "Dashboard":
+                            case "Послідовність":
                                 CurrentContentViewModel = dashboardVm;
                                 break;
-                            case "Classic Arena":
+                            case "Класична Арена":
                                 CurrentContentViewModel = arenaVm;
                                 break;
-                            case "Tag Arena":
+                            case "Тег Арена":
                                 CurrentContentViewModel = tagArenaVm;
+                                break;
+                            case "Твінс":
+                                CurrentContentViewModel = twinsVm;
+                                break;
+                            case "Налаштування":
+                                CurrentContentViewModel = settingsVm;
                                 break;
                         }
                     }

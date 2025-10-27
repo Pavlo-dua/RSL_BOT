@@ -1,23 +1,27 @@
-using System.Drawing.Imaging;
-using System.Threading;
-using System.Windows.Interop;
+using System;
 using RSLBot.Core.CoreHelpers;
 using RSLBot.Core.Services;
-using AppContext = RSLBot.Core.Services.AppContext;
+using ReactiveUI;
+using RSLBot.Core.Scenarios.ArenaClassic;
+using RSLBot.Shared.Settings;
 
 namespace RSLBot.WPF.ViewModels.Tabs
 {
-    using System.Reactive;
-    using ReactiveUI;
-    using RSLBot.Core.Scenarios.ArenaClassic;
-    using RSLBot.Shared.Settings;
-
     /// <summary>
-    /// ViewModel для вкладки налаштувань Арени.
+    /// ViewModel для вкладки налаштувань Класичної Арени.
     /// </summary>
     public class ArenaSettingsViewModel : BaseSettingsViewModel<ArenaFarmingScenario, ArenaFarmingSettings>
     {
-        public ArenaSettingsViewModel(ArenaFarmingScenario scenarioExecutor, ArenaFarmingSettings settings, Tools tool, ScreenCaptureManager screenCaptureManager, SharedSettings sharedSettings):base(scenarioExecutor, settings, tool, screenCaptureManager, sharedSettings)
+        protected override string SettingsFileName => "classic_arena_settings.json";
+
+        public ArenaSettingsViewModel(
+            ArenaFarmingScenario scenarioExecutor, 
+            ArenaFarmingSettings settings, 
+            Tools tool, 
+            ScreenCaptureManager screenCaptureManager, 
+            SharedSettings sharedSettings,
+            SettingsService settingsService)
+            : base(scenarioExecutor, settings, tool, screenCaptureManager, sharedSettings, settingsService)
         {
             this.WhenAnyValue(x => x.Settings.BuyTokensWithGems)
                 .Subscribe(buyTokens =>
@@ -34,6 +38,13 @@ namespace RSLBot.WPF.ViewModels.Tabs
                         Settings.TokenPurchases = 0;
                     }
                 });
+
+            // Автоматично зберігати налаштування при зміні
+            this.WhenAnyValue(
+                x => x.Settings.BuyTokensWithGems,
+                x => x.Settings.TokenPurchases,
+                x => x.Settings.RefreshOpponentsOnStart)
+                .Subscribe(_ => SaveSettings());
         }
     }
 }

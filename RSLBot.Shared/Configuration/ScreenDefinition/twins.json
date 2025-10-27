@@ -1,0 +1,51 @@
+{
+    "Id": "Twins",
+    "WindowHeight" : 652,
+    "WindowWidth" : 1173,
+    "VerificationImages": [{
+        "Name": "TwinsVerify",
+        "Area": {
+            "X": 8,
+            "Y": 0,
+            "Width": 450,
+            "Height": 60
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Twins\\ver.png"
+    }],
+    "UIElements": [
+        {
+            "Name": "fight",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Twins\\fight_start.png"
+        },
+        {
+            "Name": "keys",
+            "Area": {
+                "X": 548,
+                "Y": 0,
+                "Width": 300,
+                "Height": 40
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Twins\\key.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "Dungeons",
+        "TriggerElement": {
+            "Name": "Close",
+            "Area": {
+                "X": 1100,
+                "Y": 0,
+                "Width": 55,
+                "Height": 40
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\close.png"
+        }
+    }]
+}

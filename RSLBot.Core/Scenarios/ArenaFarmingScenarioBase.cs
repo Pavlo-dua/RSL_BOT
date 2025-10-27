@@ -153,10 +153,8 @@ namespace RSLBot.Core.Scenarios
                 await SyncWindow();
                 if (Window != null)
                 {
-                    using (var controlArea = Window.Clone(new Rectangle(Configuration.ControlSnapshotPoint, new Size(Configuration.OpponentAreaWidth, Configuration.OpponentAreaHeight)), Window.PixelFormat))
-                    {
-                        _firstOpponentSnapshot = new Bitmap(controlArea);
-                    }
+                    using var controlArea = Window.Clone(new Rectangle(Configuration.ControlSnapshotPoint, new Size(Configuration.OpponentAreaWidth, Configuration.OpponentAreaHeight)), Window.PixelFormat);
+                    _firstOpponentSnapshot = new Bitmap(controlArea);
                 }
                 
                 // Крок 3: Почати обробку списку по "екранам"
@@ -240,30 +238,26 @@ namespace RSLBot.Core.Scenarios
                     await SyncWindow();
                     if (Window != null)
                     {
-                        using (var areaBeforeScroll = Window.Clone(Configuration.ScrollCheckRect, Window.PixelFormat))
-                        {
-                            // Прокрутити вниз
-                            MouseDrag(new Point(Configuration.ScrollDragX, Configuration.ScrollDragStartYBottom), new Point(Configuration.ScrollDragX, Configuration.ScrollDragEndYTop), 200, 500);
-                            await Task.Delay(1000);
+                        using var areaBeforeScroll = Window.Clone(Configuration.ScrollCheckRect, Window.PixelFormat);
+                        // Прокрутити вниз
+                        MouseDrag(new Point(Configuration.ScrollDragX, Configuration.ScrollDragStartYBottom), new Point(Configuration.ScrollDragX, Configuration.ScrollDragEndYTop), 200, 500);
+                        await Task.Delay(1000);
 
-                            // Перевірити чи змінився екран
-                            await SyncWindow();
-                            if (Window != null)
+                        // Перевірити чи змінився екран
+                        await SyncWindow();
+                        if (Window != null)
+                        {
+                            using var areaAfterScroll = Window.Clone(Configuration.ScrollCheckRect, Window.PixelFormat);
+                            var match = ImageAnalyzer.FindImage(areaBeforeScroll, areaAfterScroll, accuracy: 0.98);
+                            if (match != default)
                             {
-                                using (var areaAfterScroll = Window.Clone(Configuration.ScrollCheckRect, Window.PixelFormat))
-                                {
-                                    var match = ImageAnalyzer.FindImage(areaBeforeScroll, areaAfterScroll, accuracy: 0.98);
-                                    if (match != default)
-                                    {
-                                        LoggingService.Info("End of list reached - content did not change after scroll.");
-                                        endOfListReached = true;
-                                    }
-                                    else
-                                    {
-                                        currentScrollDepth++;
-                                        LoggingService.Info($"Scrolled successfully. New depth: {currentScrollDepth}");
-                                    }
-                                }
+                                LoggingService.Info("End of list reached - content did not change after scroll.");
+                                endOfListReached = true;
+                            }
+                            else
+                            {
+                                currentScrollDepth++;
+                                LoggingService.Info($"Scrolled successfully. New depth: {currentScrollDepth}");
                             }
                         }
                     }
@@ -348,6 +342,7 @@ namespace RSLBot.Core.Scenarios
         {
             LoggingService.Info("Scrolling to the top of the list.");
             int maxScrolls = 5; // Safety break
+            int tryCount = 1;
             Bitmap? previousArea = null;
 
             for (int i = 0; i < maxScrolls; i++)
@@ -357,12 +352,17 @@ namespace RSLBot.Core.Scenarios
                 {
                     var currentArea = Window.Clone(Configuration.ScrollCheckRect, Window.PixelFormat);
 
-                    if (previousArea != null && ImageAnalyzer.FindImage(previousArea, currentArea, default, 0.95) != default)
+                    if (previousArea != null && ImageAnalyzer.FindImage(previousArea, currentArea) != default)
                     {
-                        LoggingService.Info("Top of the list reached.");
-                        previousArea.Dispose();
-                        currentArea.Dispose();
-                        return;
+                        if (tryCount == 0)
+                        {
+                            LoggingService.Info("Top of the list reached.");
+                            previousArea.Dispose();
+                            currentArea.Dispose();
+                            return;
+                        }
+
+                        tryCount--;
                     }
                     
                     previousArea?.Dispose();
@@ -465,13 +465,16 @@ namespace RSLBot.Core.Scenarios
                         {
                             case var id when id == Configuration.FreeTokensScreenId:
                                 // Далі ведемо стандартний сценарій запуску бою
-                                await navigator.GoToScreenAsync(screenDefinition, Configuration.MainScreenId);
-                                LoggingService.InfoUi("Додано безкоштовних токенів Арени");
+                                await Click(screenDefinition["BuyTokens"], navigator.GetScreenDefinitionById(Configuration.MainScreenId));
+                                LoggingService.InfoUi("Додаткові монети Арени отримано");
+                                
                                 LoggingService.Info($"Scrolling back to depth {currentScrollDepth} after fight...");
                                 await ScrollToDepth(currentScrollDepth);
-                                Click(fightButtonRect.ToPoint());
+                                
+                                await Click(fightButtonRect.ToPoint(), navigator.GetScreenDefinitionById(Configuration.PreparingScreenId));
+                                
                                 await ExecuteSingleRun(opponent);
-                                return false; // завершити очікування після запуску підпроцесу
+                                return false;
 
                             case var id when id == Configuration.BuyTokensScreenId:
                                 if (TokenPurchased > 0)
@@ -484,11 +487,16 @@ namespace RSLBot.Core.Scenarios
                                     LoggingService.InfoUi($"Куплено разів {(settings.TokenPurchases == 0 ? 100 - TokenPurchased : settings.TokenPurchases - TokenPurchased)}");
                                     
                                     await ScrollToDepth(currentScrollDepth);
+                                    
+                                    await Click(fightButtonRect.ToPoint(), navigator.GetScreenDefinitionById(Configuration.PreparingScreenId));
+                                
+                                    await ExecuteSingleRun(opponent);
                                 }
                                 else
                                 {
                                     await sharedSettings.CancellationTokenSource.CancelAsync();
                                 }
+                                
                                 return false;         
 
                             case var id when id == Configuration.PreparingScreenId:
@@ -579,7 +587,10 @@ namespace RSLBot.Core.Scenarios
             }
 
             // Спочатку прокрутити на самий верх
-            await ScrollToTop();
+            if (!(_firstOpponentSnapshot != null && !await IsOpponentVisible(_firstOpponentSnapshot)))
+            {
+                await ScrollToTop();
+            }
 
             // Потім прокрутити вниз потрібну кількість разів
             for (int i = 0; i < targetDepth; i++)

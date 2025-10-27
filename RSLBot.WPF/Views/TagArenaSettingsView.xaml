@@ -14,7 +14,7 @@
             <StackPanel MaxWidth="700">
                 
                 <!-- Заголовок секції -->
-                <materialDesign:Card Background="{DynamicResource PrimaryHueMidBrush}" 
+                <materialDesign:Card Background="#FF7043" 
                                      UniformCornerRadius="8" Padding="20,16" Margin="0,0,0,24">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="ShieldStar" 
@@ -36,17 +36,17 @@
                 <materialDesign:Card UniformCornerRadius="10" Margin="0,0,0,20" 
                                     materialDesign:ElevationAssist.Elevation="Dp4">
                     <StackPanel>
-                        <Border Background="{DynamicResource PrimaryHueLightBrush}" 
+                        <Border Background="#FFCCBC" 
                                CornerRadius="10,10,0,0" Padding="16,12">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Diamond" 
+                                <materialDesign:PackIcon Kind="DiamondStone" 
                                                         Width="24" Height="24" 
                                                         VerticalAlignment="Center"
-                                                        Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
+                                                        Foreground="#D84315"/>
                                 <TextBlock Text="Економіка та ресурси" 
                                           FontSize="16" FontWeight="SemiBold"
                                           VerticalAlignment="Center" Margin="12,0,0,0"
-                                          Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
+                                          Foreground="#D84315"/>
                             </StackPanel>
                         </Border>
                         <Border Padding="10" Background="{DynamicResource MaterialDesignPaper}">
@@ -78,7 +78,7 @@
                                             <materialDesign:PackIcon Kind="InformationOutline" 
                                                                     Width="16" Height="16"
                                                                     VerticalAlignment="Center" 
-                                                                    Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                                                    Foreground="#FF7043"/>
                                             <TextBlock Text="Введіть 0 для необмеженої кількості покупок" 
                                                       FontSize="12" Opacity="0.7" Margin="8,0,0,0"
                                                       TextWrapping="Wrap" VerticalAlignment="Center"/>
@@ -95,17 +95,17 @@
                                     materialDesign:ElevationAssist.Elevation="Dp4">
                     
                         <StackPanel>
-                            <Border Background="{DynamicResource PrimaryHueLightBrush}" 
+                            <Border Background="#FFCCBC" 
                                    CornerRadius="10,10,0,0" Padding="16,12">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Strategy" 
+                                    <materialDesign:PackIcon Kind="Refresh" 
                                                             Width="24" Height="24" 
                                                             VerticalAlignment="Center"
-                                                            Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
+                                                            Foreground="#D84315"/>
                                     <TextBlock Text="Стратегія та поведінка" 
                                               FontSize="16" FontWeight="SemiBold"
                                               VerticalAlignment="Center" Margin="12,0,0,0"
-                                              Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
+                                              Foreground="#D84315"/>
                                 </StackPanel>
                             </Border>
                             <Border Padding="10" Background="{DynamicResource MaterialDesignPaper}">
@@ -129,7 +129,7 @@
                                     <materialDesign:PackIcon Kind="LightbulbOnOutline" 
                                                             Width="18" Height="18"
                                                             VerticalAlignment="Top" Margin="0,2,0,0"
-                                                            Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                                                            Foreground="#FFAB00"/>
                                     <TextBlock Text="Оновлення списку супротивників на початку скине ваші попередні спроби"
                                               FontSize="13" Opacity="0.8" Margin="10,0,0,0"
                                               TextWrapping="Wrap"/>
@@ -150,7 +150,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border Background="{DynamicResource PrimaryHueMidBrush}" 
+                        <Border Background="#FF7043" 
                                CornerRadius="50" Width="50" Height="50"
                                VerticalAlignment="Center" Margin="0,0,20,0">
                             <materialDesign:PackIcon Kind="SwordCross" 

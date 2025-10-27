@@ -5,20 +5,298 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Margin="16">
-        <StackPanel>
-            <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" Text="Scenario Sequence"/>
-            <ListView ItemsSource="{Binding ScenarioQueue}" Margin="0,16,0,0" IsEnabled="False">
-                <!-- TODO: Make this list interactive -->
-            </ListView>
-            <Button Command="{Binding RunSequenceCommand}" Style="{StaticResource MaterialDesignRaisedButton}" 
-                    HorizontalAlignment="Left" Margin="0,16,0,0" IsEnabled="False">
-                <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Play" Margin="0,0,8,0"/>
-                    <TextBlock Text="Run Sequence"/>
+             d:DesignHeight="600" d:DesignWidth="900">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <materialDesign:Card Grid.Row="0" Padding="16" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" 
+                           Text="Послідовність Сценаріїв" 
+                           Margin="0,0,0,8"/>
+                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}" 
+                           Opacity="0.7"
+                           Text="Створіть чергу сценаріїв для автоматичного виконання"/>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <!-- Основний контент -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="250"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Список черги сценаріїв -->
+            <materialDesign:Card Grid.Column="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Заголовок списку -->
+                    <Border Grid.Row="0" Background="{DynamicResource MaterialDesignDivider}" Padding="16,12">
+                        <TextBlock Text="Черга сценаріїв" 
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                   FontWeight="SemiBold"/>
+                    </Border>
+
+                    <!-- Список -->
+                    <ListView Grid.Row="1" 
+                              ItemsSource="{Binding ScenarioQueue}" 
+                              SelectedItem="{Binding SelectedQueueItem}"
+                              Margin="0"
+                              SelectionMode="Single">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Іконка -->
+                                    <materialDesign:PackIcon Grid.Column="0" 
+                                                            Kind="PlayCircleOutline" 
+                                                            Width="24" Height="24"
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,12,0"
+                                                            Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+                                    <!-- Чекбокс -->
+                                    <CheckBox Grid.Column="1" 
+                                             IsChecked="{Binding IsEnabled}"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,12,0"
+                                             ToolTip="Увімкнути/вимкнути сценарій"/>
+
+                                    <!-- Назва сценарію -->
+                                    <TextBlock Grid.Column="2" 
+                                              Text="{Binding DisplayName}" 
+                                              VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignBody1TextBlock}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                        <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- Індикатор порядку -->
+                                    <TextBlock Grid.Column="3" 
+                                              Text="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=(ItemsControl.AlternationIndex), StringFormat={}#{0}}"
+                                              Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                              Opacity="0.6"
+                                              VerticalAlignment="Center"
+                                              Margin="12,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource MaterialDesignListBoxItem}">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+
+                    <!-- Повідомлення, якщо черга порожня -->
+                    <StackPanel Grid.Row="1" 
+                               VerticalAlignment="Center" 
+                               HorizontalAlignment="Center"
+                               Visibility="{Binding ScenarioQueue.Count, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=0}">
+                        <materialDesign:PackIcon Kind="PlaylistRemove" 
+                                                Width="64" Height="64"
+                                                Opacity="0.3"
+                                                HorizontalAlignment="Center"/>
+                        <TextBlock Text="Черга порожня" 
+                                  Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                  Opacity="0.5"
+                                  HorizontalAlignment="Center"
+                                  Margin="0,16,0,0"/>
+                        <TextBlock Text="Додайте сценарії за допомогою панелі справа" 
+                                  Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                  Opacity="0.4"
+                                  HorizontalAlignment="Center"
+                                  Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Панель керування -->
+            <materialDesign:Card Grid.Column="2">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0">
+                        <!-- Заголовок панелі -->
+                        <Border Background="{DynamicResource MaterialDesignDivider}" Padding="16,12">
+                            <TextBlock Text="Керування" 
+                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                       FontWeight="SemiBold"/>
+                        </Border>
+
+                        <StackPanel Margin="16">
+                            <!-- Додавання сценаріїв -->
+                            <TextBlock Text="Додати сценарій" 
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Margin="0,0,0,8"
+                                       FontWeight="Medium"/>
+
+                            <ItemsControl ItemsSource="{Binding AvailableScenarios}" Margin="0,0,0,24">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding DataContext.AddScenarioCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding Id}"
+                                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                                HorizontalAlignment="Stretch"
+                                                Margin="0,0,0,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Plus" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{Binding DisplayName}"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Керування чергою -->
+                            <TextBlock Text="Редагування черги" 
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Margin="0,0,0,8"
+                                       FontWeight="Medium"/>
+
+                            <Button Command="{Binding MoveUpCommand}" 
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,0,8"
+                                    ToolTip="Перемістити вибраний сценарій вище">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ArrowUp" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Вгору"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding MoveDownCommand}" 
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,0,8"
+                                    ToolTip="Перемістити вибраний сценарій нижче">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ArrowDown" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Вниз"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding RemoveSelectedCommand}" 
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,0,8"
+                                    ToolTip="Видалити вибраний сценарій з черги">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Delete" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Видалити"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding ClearQueueCommand}" 
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,0,0"
+                                    ToolTip="Очистити всю чергу">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="PlaylistRemove" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Очистити"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </materialDesign:Card>
+        </Grid>
+
+        <!-- Панель запуску -->
+        <materialDesign:Card Grid.Row="2" Padding="16" Margin="0,16,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Індикатор статусу -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Information" 
+                                            Width="20" Height="20"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                    <TextBlock VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignBody2TextBlock}">
+                                <Setter Property="Text" Value="Готово до запуску"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                        <Setter Property="Text" Value="Виконується..."/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryHueMidBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
-            </Button>
-        </StackPanel>
+
+                <!-- Кнопки запуску -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Command="{Binding RunSequenceCommand}" 
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Margin="0,0,8,0"
+                            Height="40"
+                            Padding="24,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" 
+                                                    Width="20" Height="20"
+                                                    Margin="0,0,8,0"
+                                                    VerticalAlignment="Center"/>
+                            <TextBlock Text="Запустити" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding CancelSequenceCommand}"
+                            Height="40"
+                            Padding="24,0">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                                <Setter Property="Background" Value="{DynamicResource ValidationErrorBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBrush}" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignDarkSeparatorBackground}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDarkSeparatorBackground}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Stop" 
+                                                    Width="20" Height="20"
+                                                    Margin="0,0,8,0"
+                                                    VerticalAlignment="Center"/>
+                            <TextBlock Text="Скасувати" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
     </Grid>
 </UserControl>

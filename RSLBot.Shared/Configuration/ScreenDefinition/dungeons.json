@@ -1,0 +1,28 @@
+{
+    "Id": "Dungeons",
+    "VerificationImages": [{
+        "Name": "ArenaMapVerify",
+        "Area": {
+            "X": 8,
+            "Y": 0,
+            "Width": 300,
+            "Height": 50
+        },
+        "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Dungeons\\ver.png"
+    }],
+    "UIElements": [],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "Bastion",
+        "TriggerElement": {
+            "Name": "Bastion",
+            "Area": {
+                "X": 1070,
+                "Y": 550,
+                "Width": 80,
+                "Height": 80
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\bastion.png"
+        }
+    }]
+}

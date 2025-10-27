@@ -16,12 +16,12 @@ namespace RSLBot.Shared.Models
         public List<UIElement> UIElements { get; set; } = [];
         public List<ScreenDefinition> InnerScreenDefinitions { get; set; } = [];
 
-        public UIElement? this[string name]
+        public UIElement this[string name]
         {
             get
             {
                 var n = name.ToUpper();
-                return UIElements.Find(el => el.Name.Equals(n, StringComparison.CurrentCultureIgnoreCase));
+                return UIElements.First(el => el.Name.Equals(n, StringComparison.CurrentCultureIgnoreCase));
             }
         }
 

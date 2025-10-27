@@ -1,0 +1,38 @@
+{
+    "ParentId": "Twins",
+    "Id": "TwinsBuyTokens",
+    "VerificationImages": [{
+        "Name": "FreeTokensVerify",
+        "Area": {
+            "X": 490,
+            "Y": 437,
+            "Width": 188,
+            "Height": 75
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\buy_tokens.png"
+    }],
+    "UIElements": [{
+        "Name": "BuyTokens",
+        "Area": {
+            "X": 490,
+            "Y": 437,
+            "Width": 188,
+            "Height": 75
+        },
+        "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\buy_tokens.png"
+    }],
+    "InnerScreenDefinitions": [],
+    "Transitions": [{
+        "TargetScreenId": "TagArena",
+        "TriggerElement": {
+            "Name": "CloseTokens",
+            "Area": {
+                "X": 832,
+                "Y": 60,
+                "Width": 75,
+                "Height": 75
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\close_buy_tokens.png"
+        }
+    }]
+}

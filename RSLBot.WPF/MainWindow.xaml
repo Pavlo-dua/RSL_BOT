@@ -35,7 +35,7 @@
             - Жодних ItemTemplate. Контрол сам відобразить елементи.
             -->
             <mde:NavigationRail Style="{DynamicResource MaterialDesignNavigationRail}" BorderThickness="10"
-                                 Width="84"
+                                 Width="150"
                 Grid.Column="0"
                 Items="{Binding NavigationItems, Mode=OneTime}"
                 SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
@@ -52,6 +52,12 @@
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type tabs:TagArenaSettingsViewModel}">
                         <views:TagArenaSettingsView />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:TwinsSettingsViewModel}">
+                        <views:TwinsSettingsView />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:SettingsViewModel}">
+                        <views:SettingsView />
                     </DataTemplate>
                 </ContentControl.Resources>
             </ContentControl>

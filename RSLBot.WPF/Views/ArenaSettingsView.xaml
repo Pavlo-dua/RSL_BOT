@@ -39,7 +39,7 @@
                         <Border Background="{DynamicResource PrimaryHueLightBrush}" 
                                CornerRadius="10,10,0,0" Padding="16,12">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Diamond" 
+                                <materialDesign:PackIcon Kind="DiamondStone" 
                                                         Width="24" Height="24" 
                                                         VerticalAlignment="Center"
                                                         Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
@@ -98,7 +98,7 @@
                             <Border Background="{DynamicResource PrimaryHueLightBrush}" 
                                    CornerRadius="10,10,0,0" Padding="16,12">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Strategy" 
+                                    <materialDesign:PackIcon Kind="Refresh" 
                                                             Width="24" Height="24" 
                                                             VerticalAlignment="Center"
                                                             Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
@@ -129,7 +129,7 @@
                                     <materialDesign:PackIcon Kind="LightbulbOnOutline" 
                                                             Width="18" Height="18"
                                                             VerticalAlignment="Top" Margin="0,2,0,0"
-                                                            Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                                                            Foreground="#FFAB00"/>
                                     <TextBlock Text="Оновлення списку супротивників на початку скине ваші попередні спроби"
                                               FontSize="13" Opacity="0.8" Margin="10,0,0,0"
                                               TextWrapping="Wrap"/>

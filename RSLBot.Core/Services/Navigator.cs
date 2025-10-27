@@ -15,31 +15,44 @@ namespace RSLBot.Core.Services
     /// <summary>
     /// Реалізація сервісу навігації. Використовує граф екранів та алгоритм BFS для пошуку шляху.
     /// </summary>
-    public class Navigator : Manipulation, INavigator
+    public class Navigator(
+        IConfigurationService configurationService,
+        ILoggingService logger,
+        Tools tools,
+        ScreenCaptureManager captureManager,
+        ImageAnalyzer imageAnalyzer,
+        ImageResourceManager imageResourceManager,
+        SharedSettings sharedSettings)
+        : Manipulation(tools, sharedSettings, imageAnalyzer, imageResourceManager, logger), INavigator
     {
 
-        private readonly IConfigurationService _configurationService;
-        private readonly ILoggingService _logger;
-        private readonly Tools _tools;
-        private readonly ScreenCaptureManager _captureManager;
-        private readonly ImageAnalyzer _imageAnalyzer;
-        private readonly IReadOnlyDictionary<ScreenDefinitionId, ScreenDefinition> _screenGraph;
+        private readonly IConfigurationService _configurationService = configurationService;
+        private readonly ILoggingService _logger = logger;
+        private readonly Tools _tools = tools;
+        private readonly ScreenCaptureManager _captureManager = captureManager;
+        private readonly ImageAnalyzer _imageAnalyzer = imageAnalyzer;
+        private readonly IReadOnlyDictionary<ScreenDefinitionId, ScreenDefinition> _screenGraph = configurationService.GetScreenDefinitions();
 
-        public Navigator(
-            IConfigurationService configurationService,
-            ILoggingService logger,
-            Tools tools,
-            ScreenCaptureManager captureManager,
-            ImageAnalyzer imageAnalyzer,
-            ImageResourceManager imageResourceManager,
-            SharedSettings sharedSettings) : base(tools, sharedSettings, imageAnalyzer, imageResourceManager, logger)
+        public async Task CloseAllPopUp()
         {
-            _configurationService = configurationService;
-            _logger = logger;
-            _tools = tools;
-            _captureManager = captureManager;
-            _imageAnalyzer = imageAnalyzer;
-            _screenGraph = configurationService.GetScreenDefinitions();
+            await SyncWindow();
+
+            while (true)
+            {
+                var close = ImageAnalyzer.FindImage(Window,
+                    ImageResourceManager["Configuration\\ScreenDefinition\\Templates\\popup_close.png"]);
+
+                if (close != default)
+                {
+                    Click(close.ToPoint());
+                    await Task.Delay(3000, sharedSettings.CancellationTokenSource.Token);
+                    await SyncWindow();
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -47,6 +60,8 @@ namespace RSLBot.Core.Services
         /// </summary>
         public async Task<ScreenDefinition> GoToScreenAsync(ScreenDefinitionId targetScreenId, bool navigateByChild = false)
         {
+            await CloseAllPopUp();
+            
             var startState = await GetCurrentStateAsync();
 
             if (startState == null)
@@ -60,6 +75,8 @@ namespace RSLBot.Core.Services
 
         public async Task<ScreenDefinition> GoToScreenAsync(ScreenDefinition currentScreen, ScreenDefinitionId targetScreenId)
         {
+            await CloseAllPopUp();
+            
             if (currentScreen.Id == targetScreenId)
             {
                 _logger.Info("Already on the target screen.");
@@ -84,15 +101,21 @@ namespace RSLBot.Core.Services
             }
 
             _logger.Info($"Path found: {string.Join(" -> ", path.Select(t => t.TargetScreen.Id))}. Executing...");
+            
             foreach (var transition in path)
             {
-                if (await ClickOnElementAsync(transition))
+                if (await ClickOnElementAsync(transition, async () =>
+                    {
+                        if (transition.TargetScreen.Id == ScreenDefinitionId.Bastion)
+                            await CloseAllPopUp();
+                    }))
                 {
                     _logger.Info("Clicked on " + transition.TriggerElement.Name);
                 }
                 else
                 {
-                    _logger.Error(new InvalidOperationException("Path not found"), $"Path from '{startNode.Id}' to '{targetNode.Id}' not found!");
+                    _logger.Error(new InvalidOperationException("Path not found"),
+                        $"Path from '{startNode.Id}' to '{targetNode.Id}' not found!");
                     return null;
                 }
             }
@@ -243,7 +266,7 @@ namespace RSLBot.Core.Services
             return _screenGraph[id];
         }
 
-        public async Task<bool> ClickOnElementAsync(Transition transition)
+        public async Task<bool> ClickOnElementAsync(Transition transition, Func<Task>? misc = null)
         {
             var triggerElement = transition.TriggerElement;
             if (string.IsNullOrEmpty(triggerElement.ImageTemplatePath))
@@ -252,7 +275,7 @@ namespace RSLBot.Core.Services
                 return false;
             }
             
-            return await Click(triggerElement, transition.TargetScreen) != default;
+            return await Click(triggerElement, transition.TargetScreen, misc) != default;
         }
 
         public async Task<bool> IsElementVisibleAsync(UIElement elementName)

@@ -12,6 +12,7 @@ using RSLBot.Core.CoreHelpers;
 using RSLBot.Shared.Settings;
 using RSLBot.Core.Scenarios.ArenaClassic;
 using RSLBot.Core.Scenarios.ArenaTag;
+using RSLBot.Core.Scenarios.Dungeons.Twins;
 
 namespace RSLBot.WPF
 {
@@ -37,6 +38,7 @@ namespace RSLBot.WPF
             services.AddSingleton<IUILoggingBridge, UILoggingBridge>();
             services.AddSingleton<ILoggingService, SerilogLoggingService>();
             services.AddSingleton<IConfigurationService, ConfigurationService>();
+            services.AddSingleton<SettingsService>();
 
             services.AddSingleton<INavigator, Navigator>();
             services.AddSingleton<ImageAnalyzer>();
@@ -44,19 +46,114 @@ namespace RSLBot.WPF
             services.AddSingleton<ImageResourceManager>();
 
             // --- НАЛАШТУВАННЯ ---
-            services.AddSingleton(provider => 
-                provider.GetRequiredService<IConfigurationService>().GetArenaSettings());
             services.AddSingleton<SharedSettings>();
-
+            
+            // Окремі налаштування для кожного сценарію
+            // Для Classic Arena
+            services.AddSingleton<ArenaFarmingSettings>(sp => new ArenaFarmingSettings());
+            
+            // Для Twins
+            services.AddSingleton<TwinsFarmingSettings>(sp => new TwinsFarmingSettings());
+            
             // --- СЦЕНАРІЇ ---
-            services.AddTransient<ArenaFarmingScenario>();
-            services.AddTransient<ArenaTagFarmingScenario>();
+            services.AddSingleton<ArenaFarmingScenario>(sp =>
+            {
+                var settings = new ArenaFarmingSettings(); // Окремі налаштування для Classic Arena
+                return new ArenaFarmingScenario(
+                    sp.GetRequiredService<INavigator>(),
+                    settings,
+                    sp.GetRequiredService<ILoggingService>(),
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ImageAnalyzer>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<ImageResourceManager>()
+                );
+            });
+            
+            services.AddSingleton<ArenaTagFarmingScenario>(sp =>
+            {
+                var settings = new ArenaFarmingSettings(); // Окремі налаштування для Tag Arena
+                return new ArenaTagFarmingScenario(
+                    sp.GetRequiredService<INavigator>(),
+                    settings,
+                    sp.GetRequiredService<ILoggingService>(),
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ImageAnalyzer>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<ImageResourceManager>()
+                );
+            });
+            
+            services.AddSingleton<TwinsScenario>(sp =>
+            {
+                var settings = new TwinsFarmingSettings(); // Окремі налаштування для Twins
+                return new TwinsScenario(
+                    sp.GetRequiredService<INavigator>(),
+                    settings,
+                    sp.GetRequiredService<ILoggingService>(),
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ImageAnalyzer>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<ImageResourceManager>()
+                );
+            });
+            
+            // Реєстрація всіх сценаріїв як IScenario для DashboardViewModel
+            services.AddSingleton<IEnumerable<IScenario>>(sp => new List<IScenario>
+            {
+                sp.GetRequiredService<ArenaFarmingScenario>(),
+                sp.GetRequiredService<ArenaTagFarmingScenario>(),
+                sp.GetRequiredService<TwinsScenario>()
+            });
 
             // --- VIEW MODELS ---
             services.AddSingleton<LogViewModel>();
-            services.AddTransient<DashboardViewModel>();
-            services.AddTransient<ArenaSettingsViewModel>();
-            services.AddTransient<TagArenaSettingsViewModel>();
+            services.AddSingleton<DashboardViewModel>();
+            
+            // Окремі ViewModel з власними налаштуваннями
+            services.AddSingleton<ArenaSettingsViewModel>(sp =>
+            {
+                var scenario = sp.GetRequiredService<ArenaFarmingScenario>();
+                var settings = new ArenaFarmingSettings(); // Окремі налаштування
+                return new ArenaSettingsViewModel(
+                    scenario,
+                    settings,
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ScreenCaptureManager>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<SettingsService>()
+                );
+            });
+            
+            services.AddSingleton<TagArenaSettingsViewModel>(sp =>
+            {
+                var scenario = sp.GetRequiredService<ArenaTagFarmingScenario>();
+                var settings = new ArenaFarmingSettings(); // Окремі налаштування
+                return new TagArenaSettingsViewModel(
+                    scenario,
+                    settings,
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ScreenCaptureManager>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<SettingsService>()
+                );
+            });
+            
+            services.AddSingleton<TwinsSettingsViewModel>(sp =>
+            {
+                var scenario = sp.GetRequiredService<TwinsScenario>();
+                var settings = new TwinsFarmingSettings(); // Окремі налаштування
+                return new TwinsSettingsViewModel(
+                    scenario,
+                    settings,
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ScreenCaptureManager>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<SettingsService>()
+                );
+            });
+            
+            services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<MainWindow>();
 

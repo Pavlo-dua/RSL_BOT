@@ -86,21 +86,19 @@ using System.Linq;
                     // --- FIX ---
                     // Load the original bitmap and immediately convert it to a standard pixel format
                     // to avoid issues with indexed formats that Emgu.CV cannot handle.
-                    using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                    using (var originalBitmap = new Bitmap(fs))
+                    using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    using var originalBitmap = new Bitmap(fs);
+                    // Create a new bitmap with the desired 32bpp ARGB format.
+                    var bitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height, PixelFormat.Format32bppArgb);
+                        
+                    // Draw the original image onto the new bitmap, which performs the conversion.
+                    using (var g = Graphics.FromImage(bitmap))
                     {
-                        // Create a new bitmap with the desired 32bpp ARGB format.
-                        var bitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height, PixelFormat.Format32bppArgb);
-                        
-                        // Draw the original image onto the new bitmap, which performs the conversion.
-                        using (var g = Graphics.FromImage(bitmap))
-                        {
-                            g.DrawImage(originalBitmap, new Rectangle(0, 0, originalBitmap.Width, originalBitmap.Height));
-                        }
-                        
-                        // Store the converted, non-indexed bitmap.
-                        _imageStore[relativePath] = bitmap;
+                        g.DrawImage(originalBitmap, new Rectangle(0, 0, originalBitmap.Width, originalBitmap.Height));
                     }
+                        
+                    // Store the converted, non-indexed bitmap.
+                    _imageStore[relativePath] = bitmap;
                 }
                 catch (Exception ex)
                 {

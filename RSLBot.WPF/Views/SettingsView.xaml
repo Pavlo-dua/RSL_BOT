@@ -1,0 +1,232 @@
+<UserControl x:Class="RSLBot.WPF.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <!-- Заголовок -->
+            <materialDesign:Card Padding="24" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline4TextBlock}" 
+                               Text="Налаштування" 
+                               Margin="0,0,0,8"/>
+                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}" 
+                               Opacity="0.7"
+                               Text="Управління глобальними налаштуваннями додатку"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Загальні налаштування -->
+            <materialDesign:Card Padding="24" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" 
+                               Text="Загальні" 
+                               Margin="0,0,0,16"/>
+
+                    <Separator Margin="0,0,0,16"/>
+
+                    <!-- Мова (поки що неактивна) -->
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Мова інтерфейсу" 
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       FontWeight="Medium"/>
+                            <TextBlock Text="Вибір мови інтерфейсу та розпізнавання ігрових екранів" 
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Opacity="0.6"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <ComboBox Grid.Column="1" 
+                                  MinWidth="200"
+                                  IsEnabled="False"
+                                  VerticalAlignment="Center"
+                                  Style="{StaticResource MaterialDesignComboBox}">
+                            <ComboBoxItem Content="Українська" IsSelected="True"/>
+                            <ComboBoxItem Content="English" IsEnabled="False"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Шлях до налаштувань -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Папка налаштувань" 
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       FontWeight="Medium"/>
+                            <TextBlock Text="{Binding SettingsPath}" 
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Opacity="0.6"
+                                       Margin="0,4,0,0"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" 
+                                Command="{Binding OpenSettingsFolderCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                VerticalAlignment="Center"
+                                Padding="16,8">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FolderOpen" Margin="0,0,8,0"/>
+                                <TextBlock Text="Відкрити"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Управління налаштуваннями -->
+            <materialDesign:Card Padding="24" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" 
+                               Text="Управління налаштуваннями" 
+                               Margin="0,0,0,16"/>
+
+                    <Separator Margin="0,0,0,16"/>
+
+                    <!-- Експорт/Імпорт -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Резервне копіювання" 
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       FontWeight="Medium"/>
+                            <TextBlock Text="Експортуйте або імпортуйте всі налаштування у форматі ZIP" 
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Opacity="0.6"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" 
+                                   Orientation="Horizontal" 
+                                   VerticalAlignment="Center">
+                            <Button Command="{Binding ExportSettingsCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Margin="0,0,8,0"
+                                    Padding="16,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Export" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Експорт"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding ImportSettingsCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Padding="16,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Import" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Імпорт"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Скидання налаштувань -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Скинути всі налаштування" 
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       FontWeight="Medium"/>
+                            <TextBlock Text="Видалити всі збережені конфігурації та повернутися до значень за замовчуванням" 
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Opacity="0.6"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" 
+                                Command="{Binding ResetAllSettingsCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                VerticalAlignment="Center"
+                                Padding="16,8"
+                                BorderBrush="{DynamicResource ValidationErrorBrush}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="DeleteForever" 
+                                                        Margin="0,0,8,0"
+                                                        Foreground="{DynamicResource ValidationErrorBrush}"/>
+                                <TextBlock Text="Скинути" 
+                                          Foreground="{DynamicResource ValidationErrorBrush}"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Інформація про додаток -->
+            <materialDesign:Card Padding="24">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" 
+                               Text="Про додаток" 
+                               Margin="0,0,0,16"/>
+
+                    <Separator Margin="0,0,0,16"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                   Text="Назва:" 
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   FontWeight="Medium"
+                                   Margin="0,0,16,8"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" 
+                                   Text="RSL Bot" 
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                   Text="Версія:" 
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   FontWeight="Medium"
+                                   Margin="0,0,16,8"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                   Text="1.0.0" 
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" 
+                                   Text="Опис:" 
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   FontWeight="Medium"
+                                   Margin="0,0,16,0"
+                                   VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" 
+                                   Text="Автоматизація для Raid: Shadow Legends" 
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   TextWrapping="Wrap"/>
+                    </Grid>
+                </StackPanel>
+            </materialDesign:Card>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+

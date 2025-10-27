@@ -30,7 +30,8 @@ namespace RSLBot.Core.Scenarios
         protected readonly T settings = settings;
         private readonly Tools tools = tools;
         protected readonly SharedSettings sharedSettings = sharedSettings;
-
+        protected ScreenDefinition MainScreenDefinition { get; private set; }
+        
         protected CancellationTokenSource CancellationTokenSource => sharedSettings.CancellationTokenSource;
 
         /// <summary>
@@ -45,6 +46,8 @@ namespace RSLBot.Core.Scenarios
         /// </summary>
         protected virtual async Task Prepare()
         {
+	        MainScreenDefinition = navigator.GetScreenDefinitionById(MainFarmingScreenId);
+	        
 	        if (await navigator.GoToScreenAsync(MainFarmingScreenId) == null)
 	        {
 		        await CancellationTokenSource.CancelAsync();
@@ -78,28 +81,6 @@ namespace RSLBot.Core.Scenarios
 		        }
 	        }
         }
-
-        private async Task CloseAllPopUp()
-        {
-	        await SyncWindow();
-
-	        while (true)
-	        {
-		        var close = ImageAnalyzer.FindImage(Window,
-			        ImageResourceManager["Configuration\\ScreenDefinition\\Templates\\popup_close.png"]);
-
-		        if (close != default)
-		        {
-			        Click(close.ToPoint());
-			        await Task.Delay(3000, CancellationTokenSource.Token);
-			        await SyncWindow();		        
-		        }
-		        else
-		        {
-			        break;
-		        }
-	        }
-        }
         
         /// <summary>
         /// Основний цикл, що виконує забіги.
@@ -111,8 +92,6 @@ namespace RSLBot.Core.Scenarios
         {
 	        sharedSettings.CancellationTokenSource = new CancellationTokenSource();
 	        
-	        await CloseAllPopUp();
-	        
             await Prepare();
 
             _ = MonitoringUnexpectedEvent();
@@ -120,11 +99,11 @@ namespace RSLBot.Core.Scenarios
             await Loop();
         }
 
-        protected async Task ProcessScreen(List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
+        protected async Task ProcessScreen(List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Action, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
         {
             var timeout = DateTime.Now + TimeSpan.FromMilliseconds(timeOutMilsec);
 
-            while (true)
+            while (!CancellationTokenSource.IsCancellationRequested)
             {
                 if (timeout < DateTime.Now)
                 {
@@ -138,15 +117,20 @@ namespace RSLBot.Core.Scenarios
                 
                 var screen = await navigator.GetCurrentStateAsync(screenDefinitionIds);
                 
-                if (!await processScreen(screen))
+                if (!await processScreen(screen, () => timeout = DateTime.Now + TimeSpan.FromMilliseconds(timeOutMilsec)))
                 {
                     break;
                 }
                 
-                await Task.Delay(interval);
+                await Task.Delay(interval, CancellationTokenSource.Token);
             }
         }
 
+        protected async Task ProcessScreen(List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
+        {
+			await ProcessScreen(screenDefinitionIds, (ps, _) => processScreen(ps), timeOutBack, timeOutMilsec, interval);
+        }
+        
 		/// <summary>
 		/// Виконує клік по точці та одразу запускає обробку екранів у заданому порядку.
 		/// Порядок екранів у <paramref name="screenDefinitionIds"/> зберігається під час пошуку.
@@ -157,21 +141,21 @@ namespace RSLBot.Core.Scenarios
 		/// <param name="timeOutBack">Опціонально: колбек при таймауті очікування.</param>
 		/// <param name="timeOutMilsec">Таймаут очікування.</param>
 		/// <param name="interval">Інтервал між перевірками.</param>
-		protected async Task ClickAndProcessScreens(Point clickPoint, List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
+		protected async Task ClickAndProcessScreens(Point clickPoint, List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Action, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
 		{
 			await SyncWindow();
 			
 			var attempts = 0;
 			var maxAttempts = 3;
 			var perAttemptTimeout = Math.Max(2000, timeOutMilsec / maxAttempts);
-			while (true)
+			while (!CancellationTokenSource.IsCancellationRequested)
 			{
 				Click(clickPoint);
 				var completed = false;
 				await ProcessScreen(screenDefinitionIds,
-					async def =>
+					async (def, resetTimeOut) =>
 					{
-						var cont = await processScreen(def);
+						var cont = await processScreen(def, resetTimeOut);
 						if (!cont) completed = true;
 						return cont;
 					},
@@ -202,7 +186,7 @@ namespace RSLBot.Core.Scenarios
 		/// <summary>
 		/// Перевантаження: клік по елементу з подальшою обробкою можливих екранів у заданому порядку.
 		/// </summary>
-		protected async Task ClickAndProcessScreens(UIElement element, List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
+		protected async Task ClickAndProcessScreens(UIElement element, List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Action, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
 		{
 			await SyncWindow();
 			var clickElement = ImageAnalyzer.FindImage(Window, ImageResourceManager[element.ImageTemplatePath], element.Area);
@@ -212,6 +196,23 @@ namespace RSLBot.Core.Scenarios
 				return;
 			}
 			await ClickAndProcessScreens(clickElement.ToPoint(), screenDefinitionIds, processScreen, timeOutBack, timeOutMilsec, interval);
+		}
+		
+		/// <summary>
+		/// Перевантаження: клік по елементу з подальшою обробкою можливих екранів у заданому порядку.
+		/// </summary>
+		protected async Task ClickAndProcessScreens(UIElement element, List<ScreenDefinitionId> screenDefinitionIds, Func<ScreenDefinition, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null, int timeOutMilsec = 1000*60*5, int interval = 1000)
+		{
+			await ClickAndProcessScreens(element, screenDefinitionIds, (screenDefinition, _) => processScreen(screenDefinition), timeOutBack, timeOutMilsec, interval);
+		}
+
+		protected async Task ClickAndProcessScreens(Point clickPoint, List<ScreenDefinitionId> screenDefinitionIds,
+			Func<ScreenDefinition, Task<bool>> processScreen, Func<ScreenDefinition, Task>? timeOutBack = null,
+			int timeOutMilsec = 1000 * 60 * 5, int interval = 1000)
+		{
+			await ClickAndProcessScreens(clickPoint, screenDefinitionIds,
+				(screenDefinition, _) => processScreen(screenDefinition), timeOutBack,
+				timeOutMilsec, interval);
 		}
     }
 }

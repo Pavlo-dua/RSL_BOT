@@ -50,6 +50,19 @@
                 },
                 "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\arena_tag_tokens.png"
             }
+        },
+        {
+            "TargetScreenId": "Twins",
+            "TriggerElement": {
+                "Name": "TwinsKeys",
+                "Area": {
+                    "X": 700,
+                    "Y": 210,
+                    "Width": 150,
+                    "Height": 60
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\templates\\bastion\\twins_keys.png"
+            }
         }
     ]
 }
