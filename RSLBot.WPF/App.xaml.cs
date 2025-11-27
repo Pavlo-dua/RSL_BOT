@@ -12,6 +12,7 @@ using RSLBot.Core.CoreHelpers;
 using RSLBot.Shared.Settings;
 using RSLBot.Core.Scenarios.ArenaClassic;
 using RSLBot.Core.Scenarios.ArenaTag;
+using RSLBot.Core.Scenarios.Dungeons.Minotaur;
 using RSLBot.Core.Scenarios.Dungeons.Twins;
 
 namespace RSLBot.WPF
@@ -54,6 +55,8 @@ namespace RSLBot.WPF
             
             // Для Twins
             services.AddSingleton<TwinsFarmingSettings>(sp => new TwinsFarmingSettings());
+            
+            services.AddSingleton<MinotaurFarmingSettings>(sp => new MinotaurFarmingSettings());
             
             // --- СЦЕНАРІЇ ---
             services.AddSingleton<ArenaFarmingScenario>(sp =>
@@ -98,12 +101,27 @@ namespace RSLBot.WPF
                 );
             });
             
+            services.AddSingleton<MinotaurScenario>(sp =>
+            {
+                var settings = new MinotaurFarmingSettings(); // Окремі налаштування для Twins
+                return new MinotaurScenario(
+                    sp.GetRequiredService<INavigator>(),
+                    settings,
+                    sp.GetRequiredService<ILoggingService>(),
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ImageAnalyzer>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<ImageResourceManager>()
+                );
+            });
+            
             // Реєстрація всіх сценаріїв як IScenario для DashboardViewModel
             services.AddSingleton<IEnumerable<IScenario>>(sp => new List<IScenario>
             {
                 sp.GetRequiredService<ArenaFarmingScenario>(),
                 sp.GetRequiredService<ArenaTagFarmingScenario>(),
-                sp.GetRequiredService<TwinsScenario>()
+                sp.GetRequiredService<TwinsScenario>(),
+                sp.GetRequiredService<MinotaurScenario>()
             });
 
             // --- VIEW MODELS ---
@@ -144,6 +162,20 @@ namespace RSLBot.WPF
                 var scenario = sp.GetRequiredService<TwinsScenario>();
                 var settings = new TwinsFarmingSettings(); // Окремі налаштування
                 return new TwinsSettingsViewModel(
+                    scenario,
+                    settings,
+                    sp.GetRequiredService<Tools>(),
+                    sp.GetRequiredService<ScreenCaptureManager>(),
+                    sp.GetRequiredService<SharedSettings>(),
+                    sp.GetRequiredService<SettingsService>()
+                );
+            });
+            
+            services.AddSingleton<MinotaurSettingsViewModel>(sp =>
+            {
+                var scenario = sp.GetRequiredService<MinotaurScenario>();
+                var settings = new MinotaurFarmingSettings(); // Окремі налаштування
+                return new MinotaurSettingsViewModel(
                     scenario,
                     settings,
                     sp.GetRequiredService<Tools>(),

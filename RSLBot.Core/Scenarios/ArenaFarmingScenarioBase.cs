@@ -571,7 +571,7 @@ namespace RSLBot.Core.Scenarios
                         return;
                     }
                     
-                    LoggingService.Info($"Fight status unknown. Definition: {definition}.");
+                    LoggingService.Info($"Fight status unknown. Definition: {definition.Id}.");
                 });
         }
 

@@ -6,7 +6,8 @@ public interface IScenario
     {
         ClassicArena,
         TagArena,
-        Twins
+        Twins,
+        Minotaur
     }
 
     ScenarioId Id { get; }

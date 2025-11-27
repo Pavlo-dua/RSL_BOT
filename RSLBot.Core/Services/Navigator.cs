@@ -61,7 +61,7 @@ namespace RSLBot.Core.Services
         public async Task<ScreenDefinition> GoToScreenAsync(ScreenDefinitionId targetScreenId, bool navigateByChild = false)
         {
             await CloseAllPopUp();
-            
+
             var startState = await GetCurrentStateAsync();
 
             if (startState == null)
@@ -76,7 +76,7 @@ namespace RSLBot.Core.Services
         public async Task<ScreenDefinition> GoToScreenAsync(ScreenDefinition currentScreen, ScreenDefinitionId targetScreenId)
         {
             await CloseAllPopUp();
-            
+
             if (currentScreen.Id == targetScreenId)
             {
                 _logger.Info("Already on the target screen.");
@@ -101,7 +101,7 @@ namespace RSLBot.Core.Services
             }
 
             _logger.Info($"Path found: {string.Join(" -> ", path.Select(t => t.TargetScreen.Id))}. Executing...");
-            
+
             foreach (var transition in path)
             {
                 if (await ClickOnElementAsync(transition, async () =>
@@ -114,8 +114,8 @@ namespace RSLBot.Core.Services
                 }
                 else
                 {
-                    _logger.Error(new InvalidOperationException("Path not found"),
-                        $"Path from '{startNode.Id}' to '{targetNode.Id}' not found!");
+                    _logger.Error(new InvalidOperationException("Path step not found"),
+                        $"Element for cliking not found {transition.TriggerElement.Name}");
                     return null;
                 }
             }
@@ -150,7 +150,7 @@ namespace RSLBot.Core.Services
                     if (!visited.Contains(transition.TargetScreen.Id))
                     {
                         visited.Add(transition.TargetScreen.Id);
-                        
+
                         var newPath = new List<Transition>(currentPath) { transition };
                         queue.Enqueue(newPath);
                     }
@@ -209,11 +209,11 @@ namespace RSLBot.Core.Services
             _logger.Warning("Could not identify current screen.");
             return null;
         }
-        
+
         public async Task<ScreenDefinition> GetCurrentStateAsync(List<ScreenDefinitionId> screenDefinitionIds)
         {
             _logger.Info("Identifying current screen...");
-            
+
             await SyncWindow();
 
             foreach (var screen in _screenGraph.Where(sg => screenDefinitionIds.Contains(sg.Key)).Select(sg => sg.Value))
@@ -257,8 +257,8 @@ namespace RSLBot.Core.Services
             }
 
             _logger.Warning("Could not identify current screen.");
-            
-            return new ScreenDefinition{VerificationImages = [] };;
+
+            return new ScreenDefinition { VerificationImages = [] }; ;
         }
 
         public ScreenDefinition GetScreenDefinitionById(ScreenDefinitionId id)
@@ -274,8 +274,65 @@ namespace RSLBot.Core.Services
                 _logger.Error($"Trigger element '{triggerElement.Name}' for target '{transition.TargetScreen.Id}' has no image path.");
                 return false;
             }
-            
-            return await Click(triggerElement, transition.TargetScreen, misc) != default;
+
+            // First attempt to click
+            if (await Click(triggerElement, transition.TargetScreen, misc) != default)
+            {
+                return true;
+            }
+
+            // If not found and horizontal search is enabled
+            if (transition.HorizontalSearch)
+            {
+                _logger.Info($"Element '{triggerElement.Name}' not found. Starting horizontal search...");
+
+                while (true)
+                {
+                    if (sharedSettings.CancellationTokenSource.IsCancellationRequested) return false;
+
+                    await SyncWindow();
+
+                    if (Window == null)
+                    {
+                        _logger.Warning("Window is null during horizontal search. Retrying...");
+                        await Task.Delay(500);
+                        continue;
+                    }
+
+                    // Control snapshot to check if screen moved
+                    var controlRect = new Rectangle(500, 100, 100, 100);
+                    using var controlSnapshot = Window.Clone(controlRect, Window.PixelFormat);
+
+                    // Drag horizontally
+                    MouseDrag(new Point(1062, 269), new Point(111, 269), 200, 500);
+                    await Task.Delay(1000); // Wait for scroll animation
+
+                    // Try to click again
+                    if (await Click(triggerElement, transition.TargetScreen, misc) != default)
+                    {
+                        return true;
+                    }
+
+                    // Check if screen moved
+                    await SyncWindow();
+
+                    if (Window == null)
+                    {
+                        _logger.Warning("Window is null after scroll. Retrying...");
+                        continue;
+                    }
+
+                    using var newControlSnapshot = Window.Clone(controlRect, Window.PixelFormat);
+
+                    if (ImageAnalyzer.FindImage(controlSnapshot, newControlSnapshot, accuracy: 0.99) != default)
+                    {
+                        _logger.Warning("Horizontal search reached end of list (screen did not move). Element not found.");
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public async Task<bool> IsElementVisibleAsync(UIElement elementName)

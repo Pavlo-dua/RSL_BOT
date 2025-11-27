@@ -1,5 +1,6 @@
 ﻿using RSLBot.Core.CoreHelpers;
 using RSLBot.Core.Interfaces;
+using RSLBot.Core.Scenarios.Dungeons;
 using RSLBot.Core.Services;
 using RSLBot.Shared.Interfaces;
 using RSLBot.Shared.Models;
@@ -37,14 +38,8 @@ public class TwinsScenario : DungeonFarmingScenarioBase<TwinsFarmingSettings>
     {
     }
     
-    protected override async Task<bool> ProcessDefeatScreen(ScreenDefinition screenDefinition, int countOfDefeat, Action timeoutReset)
+    protected override Task<bool> ProcessDefeatScreen(ScreenDefinition screenDefinition, int countOfDefeat, Action timeoutReset)
     {
-        if (settings.MaxDefeat == -1 || settings.MaxDefeat >= countOfDefeat)
-        {
-            timeoutReset();
-            await Click(screenDefinition["Rerun"]);
-            return true;
-        }
-        return false;
+        return Task.FromResult(settings.MaxDefeat == -1 || settings.MaxDefeat >= countOfDefeat);
     }
 }

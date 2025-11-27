@@ -1,0 +1,30 @@
+{
+    "ParentId": "Minotaur",
+    "Id": "MinotaurFighting",
+    "VerificationImages": [
+        {
+            "Name": "PreparingFightVerify",
+            "Area": {
+                "X": 830,
+                "Y": 153,
+                "Width": 170,
+                "Height": 170
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\preparing_ver.png"
+        }
+    ],
+    "UIElements": [
+        {
+            "Name": "AutoInactive",
+            "Area": {
+                "X": 20,
+                "Y": 552,
+                "Width": 90,
+                "Height": 90
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\auto_inactive.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

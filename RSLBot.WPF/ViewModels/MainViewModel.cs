@@ -39,6 +39,7 @@ namespace RSLBot.WPF.ViewModels
             ArenaSettingsViewModel arenaVm, 
             TagArenaSettingsViewModel tagArenaVm,
             TwinsSettingsViewModel twinsVm,
+            MinotaurSettingsViewModel MinVm,
             SettingsViewModel settingsVm,
             ILoggingService loggingService)
         {
@@ -49,6 +50,7 @@ namespace RSLBot.WPF.ViewModels
                 new FirstLevelNavigationItem { Label = "Класична Арена", Icon = PackIconKind.ShieldSword},
                 new FirstLevelNavigationItem { Label = "Тег Арена", Icon = PackIconKind.ShieldStar},
                 new FirstLevelNavigationItem { Label = "Твінс", Icon = PackIconKind.AccountMultiple},
+                new FirstLevelNavigationItem { Label = "Лабіринт Мінотавра", Icon = PackIconKind.Cow},
                 new FirstLevelNavigationItem { Label = "Налаштування", Icon = PackIconKind.Cog}
             };
 
@@ -72,6 +74,9 @@ namespace RSLBot.WPF.ViewModels
                             case "Твінс":
                                 CurrentContentViewModel = twinsVm;
                                 break;
+                            case "Лабіринт Мінотавра":
+                                CurrentContentViewModel = MinVm;
+                                break;                          
                             case "Налаштування":
                                 CurrentContentViewModel = settingsVm;
                                 break;

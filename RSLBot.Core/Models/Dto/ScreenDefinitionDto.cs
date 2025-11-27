@@ -20,5 +20,6 @@ namespace RSLBot.Core.Models.Dto
     {
         public ScreenDefinitionId TargetScreenId { get; set; }
         public UIElement TriggerElement { get; set; }
+        public bool HorizontalSearch { get; set; }
     }
 }

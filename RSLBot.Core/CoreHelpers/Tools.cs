@@ -212,7 +212,7 @@ namespace RSLBot.Core.CoreHelpers
 
         RECT windowRect = new RECT();
         RECT windowPos = new RECT();
-        
+
         public void Init(int nWidth = 1173, int nHeight = 652)
         {
             hWnd = nint.Zero;
@@ -229,7 +229,7 @@ namespace RSLBot.Core.CoreHelpers
 
             SetRaidDefaultSize(nWidth, nHeight);
         }
-        
+
         public void SetRaidDefaultSize(int nWidth, int nHeight)
         {
             ClientResize(hWnd, nWidth, nHeight);
@@ -253,7 +253,7 @@ namespace RSLBot.Core.CoreHelpers
             POINT ptDiff = new POINT(rcWind.right - rcWind.left - rcClient.right, rcWind.bottom - rcWind.top - rcClient.bottom);
 
             MoveWindow(hWnd, 0, 0, nWidth + ptDiff.X, nHeight + ptDiff.Y, true);
-
+            Task.Delay(1000).Wait();
             // var capCoord = ClientToScreen(hWnd, ref lefttop); //GetCaptionCoordinates();
 
             POINT lefttop = new(rcClient.left, rcClient.top); // Practicaly both are 0
@@ -355,7 +355,7 @@ namespace RSLBot.Core.CoreHelpers
             {
                 int currentX = x + (x2 - x) * i / steps;
                 int currentY = y + (y2 - y) * i / steps;
-                
+
                 mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                 SetCursorPos(currentX, currentY);
                 Thread.Sleep(5); // Пауза між кроками для плавності
@@ -384,7 +384,7 @@ namespace RSLBot.Core.CoreHelpers
 
         public Task<Bitmap?> CaptureScreenShot()
         {
-             return _screenCaptureManager.CaptureFrameAsync();
+            return _screenCaptureManager.CaptureFrameAsync();
         }
 
         public void VkDownKey(Messaging.VKeys key)
@@ -415,7 +415,7 @@ namespace RSLBot.Core.CoreHelpers
             // The Clone method is the most efficient way to perform a crop operation.
             return sourceBitmap.Clone(cropArea, sourceBitmap.PixelFormat);
         }
-        
+
         public void SetForegroundRaid()
         {
             // BringWindowToTop(this.hWnd);

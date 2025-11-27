@@ -39,5 +39,6 @@ public enum ScreenDefinitionId
     MinotaurFighting,
     MinotaurVin,
     MinotaurDefeat,
-    MinotaurBuyTokens,    
+    MinotaurBuyTokens,
+    Hub
 }

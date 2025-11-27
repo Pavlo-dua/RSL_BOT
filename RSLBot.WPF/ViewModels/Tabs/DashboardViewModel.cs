@@ -79,7 +79,8 @@ namespace RSLBot.WPF.ViewModels.Tabs
             [
                 new() { Id = IScenario.ScenarioId.ClassicArena, DisplayName = "Класична Арена" },
                 new() { Id = IScenario.ScenarioId.TagArena, DisplayName = "Тег Арена" },
-                new() { Id = IScenario.ScenarioId.Twins, DisplayName = "Залізні Близнюки" }
+                new() { Id = IScenario.ScenarioId.Twins, DisplayName = "Залізні Близнюки" },
+                new() { Id = IScenario.ScenarioId.Minotaur, DisplayName = "Лабіринт Мінотавра" }
             ];
 
             var queueChanged = Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(

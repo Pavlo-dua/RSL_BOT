@@ -4,12 +4,11 @@ using RSLBot.Core.Services;
 using RSLBot.Shared.Models;
 using System.Drawing;
 using RSLBot.Core.Extensions;
+using RSLBot.Shared.Interfaces;
+using RSLBot.Shared.Settings;
 
 namespace RSLBot.Core.Scenarios.Dungeons
 {
-    using RSLBot.Shared.Interfaces;
-    using RSLBot.Shared.Settings;
-
     /// <summary>
     /// Конфігурація для координат та ресурсів данджонів
     /// </summary>
@@ -100,16 +99,25 @@ namespace RSLBot.Core.Scenarios.Dungeons
                         case var id when id == Configuration.VictoryScreenId:
                             countOfVin++;
                             LoggingService.InfoUi($"Перемога! Разів: {countOfVin}");
-                            timeoutReset();
-                            await Click(screenDefinition["Rerun"]);
-                            return true;
+                            if (await ProcessVictoryScreen(screenDefinition, countOfVin, timeoutReset))
+                            {
+                                timeoutReset();
+                                await Click(screenDefinition["Rerun"]);
+                                return true;
+                            }
+                            
+                            await sharedSettings.CancellationTokenSource.CancelAsync();
+                            return false;
                         case var id when id == Configuration.DefeatScreenId:
                             countOfDefeat++;
                             LoggingService.InfoUi($"Програли :(. Разів: {countOfDefeat}");
                             if (await ProcessDefeatScreen(screenDefinition, countOfDefeat, timeoutReset))
                             {
+                                timeoutReset();
+                                await Click(screenDefinition["Rerun"]);
                                 return true;
                             }
+                            
                             await sharedSettings.CancellationTokenSource.CancelAsync();
                             return false;
                         default:
@@ -145,12 +153,19 @@ namespace RSLBot.Core.Scenarios.Dungeons
         }
         
         /// <summary>
+        /// Обробка екрану перемоги
+        /// </summary>
+        protected virtual Task<bool> ProcessVictoryScreen(ScreenDefinition screenDefinition, int countOfVin, Action timeoutReset)
+        {
+            return Task.FromResult(true);
+        }
+
+        /// <summary>
         /// Обробка екрану поразки
         /// </summary>
-        protected virtual async Task<bool> ProcessDefeatScreen(ScreenDefinition screenDefinition, int countOfDefeat, Action timeoutReset)
+        protected virtual Task<bool> ProcessDefeatScreen(ScreenDefinition screenDefinition, int countOfDefeat, Action timeoutReset)
         {
-            // Базова реалізація - переназначається в підкласах
-            return false;
+            return Task.FromResult(false);
         }
         
         protected virtual async Task HandleTimeout(ScreenDefinition definition)

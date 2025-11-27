@@ -8,6 +8,7 @@ namespace RSLBot.Shared.Models
     /// </summary>
     public class ScreenDefinition
     {
+        public bool ThereIsPopup { get; set; }
         public ScreenDefinitionId ParentId { get; set; }
         public ScreenDefinitionId Id { get; set; }
         public int WindowHeight { get; set; }
@@ -29,7 +30,7 @@ namespace RSLBot.Shared.Models
         {
             return Transitions.Find(tr => tr.TargetScreen.Id.Equals(screenDefinitionId))!;
         }
-        
+
         /// <summary>
         /// Список переходів, що містить прямі посилання на цільові екрани.
         /// </summary>

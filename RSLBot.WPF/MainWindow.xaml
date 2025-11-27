@@ -56,6 +56,9 @@
                     <DataTemplate DataType="{x:Type tabs:TwinsSettingsViewModel}">
                         <views:TwinsSettingsView />
                     </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:MinotaurSettingsViewModel}">
+                        <views:MinotaurSettingsView />
+                    </DataTemplate>
                     <DataTemplate DataType="{x:Type tabs:SettingsViewModel}">
                         <views:SettingsView />
                     </DataTemplate>

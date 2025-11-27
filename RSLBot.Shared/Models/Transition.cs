@@ -6,10 +6,15 @@ namespace RSLBot.Shared.Models;
 public class Transition
 {
     /// <summary>
+    /// Чи потрібно шукати елемент по горизонталі.
+    /// </summary>
+    public bool HorizontalSearch { get; set; }
+
+    /// <summary>
     /// Пряме посилання на об'єкт цільового екрана.
     /// </summary>
     public ScreenDefinition TargetScreen { get; set; }
-        
+
     /// <summary>
     /// Назва елемента, що ініціює перехід.
     /// </summary>

@@ -62,6 +62,7 @@ namespace RSLBot.Core.Services
                         sourceNode.Transitions.Add(new Transition
                         {
                             TargetScreen = targetNode,
+                            HorizontalSearch = transitionDto.HorizontalSearch,
                             TriggerElement = transitionDto.TriggerElement
                         });
                     }
@@ -110,7 +111,7 @@ namespace RSLBot.Core.Services
                 throw new FileNotFoundException($"Configuration file not found: {path}");
             }
             var json = File.ReadAllText(path);
-            
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
