@@ -88,7 +88,7 @@ namespace RSLBot.Core
                 }
 
                 await Task.Delay(milliseconsUpdating, sharedSettings.CancellationTokenSource.Token);
-                
+
                 if (await funcCond(false)) break;
 
                 maxIt--;
@@ -175,7 +175,7 @@ namespace RSLBot.Core
                 foreach (var img in imgs)
                 {
                     rec = ImageAnalyzer.FindImage(await CaptureScreenShot(), img, region, accuracy);
-                    
+
                     if (rec != default)
                     {
                         fImage = img;
@@ -185,7 +185,7 @@ namespace RSLBot.Core
 
                 return rec != default;
             }, maxIt, milliseconsUpdating);
-            
+
             return (rec, fImage);
         }
 
@@ -193,7 +193,7 @@ namespace RSLBot.Core
         {
             return await WaitAllImages([element], maxIt, milliseconsUpdating);
         }
-        
+
         protected async Task<Rectangle> WaitAllImages(List<UIElement> elements, int maxIt = 10, int milliseconsUpdating = 1000)
         {
             Rectangle firstRec = default;
@@ -211,7 +211,7 @@ namespace RSLBot.Core
                 //using var screenshot = await CaptureScreenShot();
 
                 await SyncWindow();
-                
+
                 var allFound = true;
                 var currentFirstRec = default(Rectangle);
 
@@ -283,12 +283,12 @@ namespace RSLBot.Core
                 return default;
 
             await SyncWindow();
-            
+
             var clickElement = ImageAnalyzer.FindImage(Window, ImageResourceManager[element.ImageTemplatePath], element.Area);
 
             return await ClickWithWait(clickElement.ToPoint(), funcWaiter, msDelay);
         }
-        
+
         public async Task<Rectangle> Click(Bitmap part, Bitmap waitingBitmap, Rectangle imageRectangle = default)
         {
             if (IsCancellationRequested())
@@ -313,7 +313,7 @@ namespace RSLBot.Core
             return await ClickWithWait(clickElement.ToPoint(), async () => await WaitImage(ImageResourceManager[waitingBitmap.ImageTemplatePath], waitingBitmap.Area));
         }
 
-        public async Task<Rectangle> Click(UIElement element, List<UIElement> waitingBitmaps, Func<Task>? misc = null)
+        public async Task<Rectangle> Click(UIElement element, List<UIElement>? waitingBitmaps = null, Func<Task>? misc = null)
         {
             if (IsCancellationRequested())
                 return default;
@@ -324,7 +324,7 @@ namespace RSLBot.Core
             {
                 await misc.Invoke();
             }
-            
+
             var clickElementRect = ImageAnalyzer.FindImage(Window, ImageResourceManager[element.ImageTemplatePath], element.Area);
 
             if (clickElementRect == default)
@@ -333,7 +333,7 @@ namespace RSLBot.Core
                 return default;
             }
 
-            if (waitingBitmaps == null || !waitingBitmaps.Any())
+            if (waitingBitmaps == null || waitingBitmaps.Count == 0)
             {
                 Click(clickElementRect.ToPoint());
                 return clickElementRect;
@@ -345,7 +345,7 @@ namespace RSLBot.Core
                 {
                     await misc.Invoke();
                 }
-                
+
                 return await WaitAllImages(waitingBitmaps);
             });
         }
@@ -357,7 +357,7 @@ namespace RSLBot.Core
 
             return await ClickWithWait(point, async () => await WaitAllImages(waitingBitmaps));
         }
-        
+
         public async Task<Rectangle> Click(UIElement element, ScreenDefinition waitingScreen, Func<Task>? misc = null)
         {
             return await Click(element, waitingScreen.VerificationImages, misc);
@@ -379,10 +379,10 @@ namespace RSLBot.Core
             }
 
             Click(clickElementRect.ToPoint());
-            
+
             return clickElementRect;
         }
-        
+
         public async Task<Rectangle> Click(Point element, ScreenDefinition waitingScreen, Func<Task>? misc = null)
         {
             if (IsCancellationRequested())
@@ -398,7 +398,7 @@ namespace RSLBot.Core
                 return await WaitAllImages(waitingScreen.VerificationImages);
             });
         }
-        
+
         public async Task<List<Rectangle>> FindAllImages(Bitmap img, Rectangle region = default, double accuracy = 0.98)
         {
             if (IsCancellationRequested())

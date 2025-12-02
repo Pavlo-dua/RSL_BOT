@@ -17,7 +17,7 @@ namespace RSLBot.WPF.ViewModels.Tabs
     public class ScrollComboBoxItem
     {
         public string? Route { get; set; }
-        public string? Tag { get; set; }
+        public RSLBot.Shared.Models.MinotaurScrollType Tag { get; set; }
         public string? ImagePath { get; set; }
 
         public override string ToString() => Route ?? "";
@@ -38,10 +38,10 @@ namespace RSLBot.WPF.ViewModels.Tabs
         }
 
         public MinotaurSettingsViewModel(
-            MinotaurScenario scenarioExecutor, 
-            MinotaurFarmingSettings settings, 
-            Tools tool, 
-            ScreenCaptureManager screenCaptureManager, 
+            MinotaurScenario scenarioExecutor,
+            MinotaurFarmingSettings settings,
+            Tools tool,
+            ScreenCaptureManager screenCaptureManager,
             SharedSettings sharedSettings,
             SettingsService settingsService)
             : base(scenarioExecutor, settings, tool, screenCaptureManager, sharedSettings, settingsService)
@@ -60,7 +60,7 @@ namespace RSLBot.WPF.ViewModels.Tabs
             // Коли змінюється вибраний сувій, оновлювати налаштування
             this.WhenAnyValue(x => x.SelectedScroll)
                 .Where(x => x != null)
-                .Subscribe(scroll => Settings.Scrolls = scroll?.Tag ?? "Всі");
+                .Subscribe(scroll => Settings.Scrolls = scroll!.Tag);
         }
 
         private ScrollComboBoxItem? _selectedScroll;
@@ -77,25 +77,19 @@ namespace RSLBot.WPF.ViewModels.Tabs
                 new ScrollComboBoxItem
                 {
                     Route = "Всі",
-                    Tag = "Всі",
-                    ImagePath = "/RSLBot.Shared;component/Configuration/ScreenDefinition/Templates/red_scroll_res.png"
-                },
-                new ScrollComboBoxItem
-                {
-                    Route = "600 Виняткових",
-                    Tag = "600 червоних",
+                    Tag = RSLBot.Shared.Models.MinotaurScrollType.Red,
                     ImagePath = "/RSLBot.Shared;component/Configuration/ScreenDefinition/Templates/red_scroll_res.png"
                 },
                 new ScrollComboBoxItem
                 {
                     Route = "Незвичні",
-                    Tag = "Тільки Зелені",
+                    Tag = RSLBot.Shared.Models.MinotaurScrollType.Green,
                     ImagePath = "/RSLBot.Shared;component/Configuration/ScreenDefinition/Templates/green_scroll_res.png"
                 },
                 new ScrollComboBoxItem
                 {
                     Route = "Базові",
-                    Tag = "Тільки Базові",
+                    Tag = RSLBot.Shared.Models.MinotaurScrollType.Basic,
                     ImagePath = "/RSLBot.Shared;component/Configuration/ScreenDefinition/Templates/base_scroll_res.png"
                 }
             };

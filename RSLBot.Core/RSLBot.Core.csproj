@@ -51,11 +51,5 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="RSLBot.Shared">
-      <HintPath>..\RSLBot.WPF\bin\Debug\net9.0-windows10.0.26100.0\RSLBot.Shared.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
 

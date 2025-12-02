@@ -1,0 +1,44 @@
+{
+    "ParentId": "Minotaur",
+    "Id": "MinotaurFreeTokens",
+    "VerificationImages": [
+        {
+            "Name": "FreeTokensVerify",
+            "Area": {
+                "X": 490,
+                "Y": 437,
+                "Width": 188,
+                "Height": 150
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
+        }
+    ],
+    "UIElements": [
+        {
+            "Name": "BuyTokens",
+            "Area": {
+                "X": 490,
+                "Y": 437,
+                "Width": 188,
+                "Height": 150
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": [
+        {
+            "TargetScreenId": "Minotaur",
+            "TriggerElement": {
+                "Name": "BuyTokens",
+                "Area": {
+                    "X": 490,
+                    "Y": 437,
+                    "Width": 188,
+                    "Height": 150
+                },
+                "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\free_token.png"
+            }
+        }
+    ]
+}

@@ -54,7 +54,7 @@
 
             // Configure digit-focused engine
             TesseractDigit.PageSegMode = PageSegMode.SingleLine;
-            TesseractDigit.SetVariable("tessedit_char_whitelist", "0123456789/+-%.,");
+            TesseractDigit.SetVariable("tessedit_char_whitelist", "0123456789/ ");
             TesseractDigit.SetVariable("classify_bln_numeric_mode", "1");
             TesseractDigit.SetVariable("preserve_interword_spaces", "1");
         }
@@ -85,17 +85,18 @@
                 }
 
                 // Tighten PSM to improve numeric stability
-                tesCurrent.PageSegMode = PageSegMode.SingleBlock;
-                tesCurrent.SetVariable("tessedit_char_whitelist", "0123456789/+-%.,");
-                tesCurrent.SetVariable("classify_bln_numeric_mode", "1");
+                // tesCurrent.PageSegMode = PageSegMode.SingleBlock;
+                // tesCurrent.SetVariable("tessedit_char_whitelist", "0123456789/ ");
+                // tesCurrent.SetVariable("classify_bln_numeric_mode", "1");
+                // tesCurrent.SetVariable("preserve_interword_spaces", "1");
             }
 
             tesCurrent.SetImage(scaled);
             tesCurrent.Recognize();
 
             return tesCurrent.GetUTF8Text().Trim();
-        } 
-        
+        }
+
         /*public string FindText(Bitmap raidScreenshots, bool onlyDigit = false, Rectangle imageRectangle = default)
         {
             Init();
@@ -162,7 +163,7 @@
             var savedLoc = new Point();
 
             mat.Split().All(m =>
-            { 
+            {
                 CvInvoke.MinMaxLoc(m, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
                 if (maxVal >= accuracy)
                     if (savedLoc.X == 0 || savedLoc.X > maxLoc.X)

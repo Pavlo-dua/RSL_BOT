@@ -1,5 +1,6 @@
 using ReactiveUI;
 using RSLBot.Shared.Interfaces;
+using RSLBot.Shared.Models;
 
 namespace RSLBot.Shared.Settings
 {
@@ -10,7 +11,7 @@ namespace RSLBot.Shared.Settings
     {
         private bool _useFreeRefill = false;
         private bool _useGemRefill = false;
-        private string _scrolls = "Всі";
+        private MinotaurScrollType _scrolls = MinotaurScrollType.Red;
         private int _maxDefeat = -1;
 
         public string ScenarioName => "MinotaurFarm";
@@ -36,7 +37,7 @@ namespace RSLBot.Shared.Settings
         /// <summary>
         /// Які сувої фармити.
         /// </summary>
-        public string Scrolls
+        public MinotaurScrollType Scrolls
         {
             get => _scrolls;
             set => this.RaiseAndSetIfChanged(ref _scrolls, value);

@@ -1,0 +1,30 @@
+{
+    "ParentId": "Minotaur",
+    "Id": "MinotaurMaxScroll",
+    "VerificationImages": [
+        {
+            "Name": "MinotaurVerify",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Dungeons\\Minotaur\\max_scroll.png"
+        }
+    ],
+    "UIElements": [
+        {
+            "Name": "Cancel",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Dungeons\\Minotaur\\max_scroll_cancel.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

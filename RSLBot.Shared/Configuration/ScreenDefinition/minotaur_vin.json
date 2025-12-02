@@ -10,7 +10,7 @@
                 "Width": 300,
                 "Height": 98
             },
-            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Minotaur\\vin_ver1.png"
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Twins\\vin_ver1.png"
         },
         {
             "Name": "VinVerify1",
@@ -20,19 +20,19 @@
                 "Width": 80,
                 "Height": 60
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\bastion_back.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Twins\\bastion_back.png"
         }
     ],
     "UIElements": [
         {
             "Name": "Rerun",
             "Area": {
-                "X": 550,
-                "Y": 560,
-                "Width": 73,
-                "Height": 73
+                "X": 600,
+                "Y": 566,
+                "Width": 50,
+                "Height": 50
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\rerun.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\rerun.png"
         },
         {
             "Name": "Bastion",
@@ -42,7 +42,37 @@
                 "Width": 80,
                 "Height": 60
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\bastion_back.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Twins\\bastion_back.png"
+        },
+        {
+            "Name": "base_roll",
+            "Area": {
+                "X": 180,
+                "Y": 130,
+                "Width": 800,
+                "Height": 110
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\base_scroll_res.png"
+        },
+        {
+            "Name": "green_roll",
+            "Area": {
+                "X": 180,
+                "Y": 130,
+                "Width": 800,
+                "Height": 110
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\green_scroll_res.png"
+        },
+        {
+            "Name": "red_roll",
+            "Area": {
+                "X": 180,
+                "Y": 130,
+                "Width": 800,
+                "Height": 110
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\red_scroll_res.png"
         }
     ],
     "InnerScreenDefinitions": [],
@@ -57,7 +87,7 @@
                     "Width": 80,
                     "Height": 60
                 },
-                "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\bastion_back.png"
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Twins\\bastion_back.png"
             }
         }
     ]

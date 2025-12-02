@@ -286,6 +286,47 @@ namespace RSLBot.Core.Services
             {
                 _logger.Info($"Element '{triggerElement.Name}' not found. Starting horizontal search...");
 
+                // 1. Scroll to start (Left)
+                _logger.Info("Scrolling to the beginning...");
+                while (true)
+                {
+                    if (sharedSettings.CancellationTokenSource.IsCancellationRequested) return false;
+
+                    await SyncWindow();
+                    if (Window == null)
+                    {
+                        await Task.Delay(500);
+                        continue;
+                    }
+
+                    var controlRect = new Rectangle(500, 100, 100, 100);
+                    using var controlSnapshot = Window.Clone(controlRect, Window.PixelFormat);
+
+                    // Drag Left to Right (Scroll to start)
+                    MouseDrag(new Point(111, 269), new Point(1062, 269), 200, 500);
+                    await Task.Delay(1000);
+
+                    await SyncWindow();
+                    if (Window == null) continue;
+
+                    using var newControlSnapshot = Window.Clone(controlRect, Window.PixelFormat);
+
+                    // Check if we reached the start (screen didn't move)
+                    if (ImageAnalyzer.FindImage(controlSnapshot, newControlSnapshot, accuracy: 0.99) != default)
+                    {
+                        _logger.Info("Reached the beginning of the list.");
+                        break;
+                    }
+                }
+
+                // Try to click after reaching start
+                if (await Click(triggerElement, transition.TargetScreen, misc) != default)
+                {
+                    return true;
+                }
+
+                // 2. Scroll to end (Right) - Existing logic
+                _logger.Info("Searching from beginning to end...");
                 while (true)
                 {
                     if (sharedSettings.CancellationTokenSource.IsCancellationRequested) return false;
@@ -303,7 +344,7 @@ namespace RSLBot.Core.Services
                     var controlRect = new Rectangle(500, 100, 100, 100);
                     using var controlSnapshot = Window.Clone(controlRect, Window.PixelFormat);
 
-                    // Drag horizontally
+                    // Drag horizontally (Right to Left)
                     MouseDrag(new Point(1062, 269), new Point(111, 269), 200, 500);
                     await Task.Delay(1000); // Wait for scroll animation
 

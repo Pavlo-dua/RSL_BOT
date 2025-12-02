@@ -5,12 +5,12 @@
         {
             "Name": "PreparingFightVerify",
             "Area": {
-                "X": 830,
-                "Y": 153,
-                "Width": 170,
-                "Height": 170
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\preparing_ver.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\preparing_ver.png"
         }
     ],
     "UIElements": [
@@ -22,7 +22,27 @@
                 "Width": 0,
                 "Height": 0
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Minotaur\\preparing_start_fight.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\preparing_start_fight.png"
+        },
+        {
+            "Name": "UncheckedSuperRaid",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\preparing_unchecked.png"
+        },
+        {
+            "Name": "CheckedSuperRaid",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\preparing_checked.png"
         }
     ],
     "InnerScreenDefinitions": [],
@@ -37,7 +57,7 @@
                     "Width": 55,
                     "Height": 40
                 },
-                "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close.png"
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\close.png"
             }
         }
     ]

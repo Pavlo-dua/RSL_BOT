@@ -5,20 +5,20 @@
         {
             "Name": "PreparingFightVerify1",
             "Area": {
-                "X": 465,
-                "Y": 43,
-                "Width": 250,
-                "Height": 370
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\preparing-fight.png"
         },
         {
             "Name": "PreparingFightVerify2",
             "Area": {
-                "X": 1040,
-                "Y": 560,
-                "Width": 75,
-                "Height": 60
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\start-fight1.png"
         }
@@ -27,46 +27,48 @@
         {
             "Name": "UncheckedAuto",
             "Area": {
-                "X": 890,
-                "Y": 460,
-                "Width": 55,
-                "Height": 55
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\unchecked-auto.png"
         },
         {
             "Name": "CheckedAuto",
             "Area": {
-                "X": 890,
-                "Y": 460,
-                "Width": 55,
-                "Height": 55
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\checked-auto.png"
         },
         {
             "Name": "Start",
             "Area": {
-                "X": 1040,
-                "Y": 560,
-                "Width": 75,
-                "Height": 60
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\start-fight1.png"
         }
     ],
     "InnerScreenDefinitions": [],
-    "Transitions": [{
-        "TargetScreenId": "ClassicArena",
-        "TriggerElement": {
-            "Name": "Close",
-            "Area": {
-                "X": 1100,
-                "Y": 0,
-                "Width": 55,
-                "Height": 40
-            },
-            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close.png"
+    "Transitions": [
+        {
+            "TargetScreenId": "ClassicArena",
+            "TriggerElement": {
+                "Name": "Close",
+                "Area": {
+                    "X": 1100,
+                    "Y": 0,
+                    "Width": 55,
+                    "Height": 40
+                },
+                "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close.png"
+            }
         }
-    }]
+    ]
 }

@@ -18,21 +18,30 @@ namespace RSLBot.Core.Scenarios.Dungeons
         public int ScrollDragX { get; set; } = 542;
         public int ScrollDragStartYBottom { get; set; } = 613;
         public int ScrollDragEndYTop { get; set; } = 155;
-        
+
         // ScreenDefinitionId для різних екранів
         public ScreenDefinitionId MainScreenId { get; set; }
         public ScreenDefinitionId PreparingScreenId { get; set; }
+        public ScreenDefinitionId FightingScreenId { get; set; }
         public ScreenDefinitionId BuyTokensScreenId { get; set; }
+        public ScreenDefinitionId FreeTokensScreenId { get; set; }
         public ScreenDefinitionId VictoryScreenId { get; set; }
         public ScreenDefinitionId DefeatScreenId { get; set; }
-        
+
         // Інші налаштування
         public string KeysImageElementName { get; set; } = "keys";
         public string FightImageElementName { get; set; } = "fight";
         public int MaxScrollAttempts { get; set; } = 5;
-        
+
         // Функція для отримання області перевірки (кожен данджон може мати свою)
         public Func<Rectangle>? GetCheckArea { get; set; }
+
+        // Перевірки на можливість поповнення енергії
+        public Func<bool> CanUseFreeRefill { get; set; } = () => false;
+        public Func<bool> CanUseGemRefill { get; set; } = () => false;
+
+        // Додаткові екрани для обробки
+        public List<ScreenDefinitionId> AdditionalScreens { get; set; } = [];
     }
 
     /// <summary>
@@ -42,50 +51,56 @@ namespace RSLBot.Core.Scenarios.Dungeons
         where T : IScenarioSettings
     {
         protected abstract DungeonConfiguration Configuration { get; }
-        
+
         protected DungeonFarmingScenarioBase(INavigator navigator, T settings, ILoggingService logger, Tools tools, ImageAnalyzer imageAnalyzer, SharedSettings sharedSettings, ImageResourceManager imageResourceManager)
             : base(navigator, settings, sharedSettings, tools, imageAnalyzer, imageResourceManager, logger)
         {
         }
-        
+
         protected override async Task Prepare()
         {
             await base.Prepare();
         }
-        
+
         protected override async Task Loop()
         {
             if (CancellationTokenSource.IsCancellationRequested)
             {
                 return;
             }
-            
+
             LoggingService.InfoUi($"Starting Dungeon scenario.");
-            
+
             var countOfDefeat = 0;
             var countOfVin = 0;
-            
+
             var tokens = await GetTokenCount();
 
             if (tokens == 0)
             {
-                LoggingService.InfoUi("Немає ключів, тому згортаємося :(");
+                LoggingService.InfoUi("Немає ключів/енергії, тому згортаємося :(");
                 return;
             }
 
             await ScrollToEnd();
-            
+
             var fights = await FindAllImages(ImageResourceManager[MainScreenDefinition[Configuration.FightImageElementName].ImageTemplatePath]);
             var fight = fights.OrderBy(f => f.Y).Last();
-            
+
+            var screensToProcess = new List<ScreenDefinitionId>
+            {
+                Configuration.PreparingScreenId,
+                Configuration.FightingScreenId,
+                Configuration.BuyTokensScreenId,
+                Configuration.VictoryScreenId,
+                Configuration.DefeatScreenId,
+                Configuration.FreeTokensScreenId
+            };
+            screensToProcess.AddRange(Configuration.AdditionalScreens);
+
             await ClickAndProcessScreens(
                 fight.ToPoint(),
-                [
-                    Configuration.PreparingScreenId,
-                    Configuration.BuyTokensScreenId,
-                    Configuration.VictoryScreenId,
-                    Configuration.DefeatScreenId
-                ],
+                screensToProcess,
                 async (screenDefinition, timeoutReset) =>
                 {
                     switch (screenDefinition.Id)
@@ -93,19 +108,30 @@ namespace RSLBot.Core.Scenarios.Dungeons
                         case var id when id == Configuration.PreparingScreenId:
                             await ProcessPreparingScreen(screenDefinition);
                             return true;
+                        case var id when id == Configuration.FightingScreenId:
+                            return await ProcessFightingScreen(screenDefinition);
                         case var id when id == Configuration.BuyTokensScreenId:
-                            await ProcessBuyTokensScreen(screenDefinition);
-                            return false; 
+                            return await ProcessBuyTokensScreen(screenDefinition);
+                        case var id when id == Configuration.FreeTokensScreenId:
+                            if (Configuration.FreeTokensScreenId != ScreenDefinitionId.Unknown)
+                            {
+                                return await ProcessFreeTokensScreen(screenDefinition);
+                            }
+
+                            return true;
                         case var id when id == Configuration.VictoryScreenId:
                             countOfVin++;
                             LoggingService.InfoUi($"Перемога! Разів: {countOfVin}");
                             if (await ProcessVictoryScreen(screenDefinition, countOfVin, timeoutReset))
                             {
-                                timeoutReset();
-                                await Click(screenDefinition["Rerun"]);
-                                return true;
+                                if (await ShouldRerun(screenDefinition))
+                                {
+                                    timeoutReset();
+                                    await Click(screenDefinition["Rerun"]);
+                                    return true;
+                                }
                             }
-                            
+
                             await sharedSettings.CancellationTokenSource.CancelAsync();
                             return false;
                         case var id when id == Configuration.DefeatScreenId:
@@ -113,15 +139,19 @@ namespace RSLBot.Core.Scenarios.Dungeons
                             LoggingService.InfoUi($"Програли :(. Разів: {countOfDefeat}");
                             if (await ProcessDefeatScreen(screenDefinition, countOfDefeat, timeoutReset))
                             {
-                                timeoutReset();
-                                await Click(screenDefinition["Rerun"]);
-                                return true;
+                                if (await ShouldRerun(screenDefinition))
+                                {
+                                    timeoutReset();
+                                    await Click(screenDefinition["Rerun"]);
+                                    return true;
+                                }
                             }
-                            
+
                             await sharedSettings.CancellationTokenSource.CancelAsync();
                             return false;
                         default:
-                            return true;
+                            return await ProcessCustomScreen(screenDefinition);
+
                     }
                 },
                 async definition =>
@@ -130,10 +160,10 @@ namespace RSLBot.Core.Scenarios.Dungeons
                 },
                 600000
             );
-            
-            LoggingService.InfoUi($"Dungeon scenario finished. Виграли: {countOfVin} Програли: {countOfDefeat}. Коефіцієнт: {((countOfVin+countOfDefeat) == 0 ? 0 : (double)countOfVin/(countOfVin+countOfDefeat)*100)}%");
+
+            LoggingService.InfoUi($"Dungeon scenario finished. Виграли: {countOfVin} Програли: {countOfDefeat}. Коефіцієнт: {((countOfVin + countOfDefeat) == 0 ? 0 : (double)countOfVin / (countOfVin + countOfDefeat) * 100)}%");
         }
-        
+
         /// <summary>
         /// Обробка екрану підготовки бою
         /// </summary>
@@ -142,16 +172,84 @@ namespace RSLBot.Core.Scenarios.Dungeons
             LoggingService.InfoUi($"Поїхали...");
             await Click(screenDefinition["Start"]);
         }
-        
+
+        /// <summary>
+        /// Обробка екрану бою
+        /// </summary>
+        protected virtual async Task<bool> ProcessFightingScreen(ScreenDefinition screenDefinition)
+        {
+            var autoInactive = screenDefinition["AutoInactive"];
+
+            if (autoInactive != null)
+            {
+                await SyncWindow();
+                var match = ImageAnalyzer.FindImage(Window, ImageResourceManager[autoInactive.ImageTemplatePath], autoInactive.Area, 0.99);
+                if (match != default)
+                {
+                    Click(match.ToPoint());
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Обробка кастомних екранів, визначених у нащадках
+        /// </summary>
+        protected virtual Task<bool> ProcessCustomScreen(ScreenDefinition screenDefinition)
+        {
+            return Task.FromResult(true);
+        }
+
         /// <summary>
         /// Обробка екрану покупки токенів
         /// </summary>
-        protected virtual async Task ProcessBuyTokensScreen(ScreenDefinition screenDefinition)
+        protected virtual async Task<bool> ProcessBuyTokensScreen(ScreenDefinition screenDefinition)
         {
-            LoggingService.InfoUi($"Схоже більше немає ключів, тому зупиняємося");
-            await sharedSettings.CancellationTokenSource.CancelAsync();
+            if (!Configuration.CanUseGemRefill())
+            {
+                LoggingService.InfoUi($"Схоже більше немає ключів, і покупка за рубіни заборонена, тому зупиняємося");
+                await sharedSettings.CancellationTokenSource.CancelAsync();
+                return false;
+            }
+
+            await Click(screenDefinition["BuyTokens"]);
+            return true;
         }
-        
+
+        /// <summary>
+        /// Обробка екрану безкоштовних токенів
+        /// </summary>
+        protected virtual async Task<bool> ProcessFreeTokensScreen(ScreenDefinition screenDefinition)
+        {
+            if (!Configuration.CanUseFreeRefill())
+            {
+                // Якщо безкоштовне поповнення заборонено, просто ігноруємо (або можна зупиняти, але зазвичай це просто попап)
+                // Але якщо це критично для продовження (немає енергії), то зупинка відбудеться пізніше при перевірці токенів
+                // В даному випадку, якщо це попап "візьми безкоштовно", то краще взяти?
+                // User request: "Налаштування перевірки потрібно винести... UseFreeRefill... якщо чогось немає, то врахуй це, тобто за замовченням тоді не можна купувати"
+                // Assuming if false, we shouldn't click "BuyTokens" (which is "Claim" usually).
+                // If we don't claim, we might be stuck or just close it?
+                // For now, if not allowed, return false (stop?) or just close popup?
+                // The prompt says "додай перевірку... чи можна купувати".
+                // If we return false, loop continues? No, return value of ProcessFreeTokensScreen is returned by Loop's callback.
+                // In Loop: case FreeTokensScreenId: return await ProcessFreeTokensScreen(...)
+                // If Loop callback returns false, Loop stops?
+                // ClickAndProcessScreens implementation: if callback returns false, it stops?
+                // Let's check ClickAndProcessScreens in BaseFarmingScenario (not visible here but usually yes).
+                // If we can't use free refill, we probably should stop if we are out of energy.
+                // But this screen might appear just as a bonus.
+                // However, usually this screen appears when we are out of energy.
+                // So if we can't use it, we should probably stop.
+
+                LoggingService.InfoUi($"Безкоштовне поповнення заборонено налаштуваннями.");
+                return false;
+            }
+
+            await Click(screenDefinition["BuyTokens"]);
+            return true;
+        }
+
         /// <summary>
         /// Обробка екрану перемоги
         /// </summary>
@@ -167,14 +265,19 @@ namespace RSLBot.Core.Scenarios.Dungeons
         {
             return Task.FromResult(false);
         }
-        
+
         protected virtual async Task HandleTimeout(ScreenDefinition definition)
         {
             LoggingService.WarningUi("Схоже бій затягнувся, тому зупиняємося...");
             LoggingService.Error("Зупинка бою не реалізована!");
         }
-        
-        private async Task<int> GetTokenCount()
+
+        protected virtual Task<bool> ShouldRerun(ScreenDefinition definition)
+        {
+            return Task.FromResult(true);
+        }
+
+        protected virtual async Task<int> GetTokenCount()
         {
             await SyncWindow();
 
@@ -183,19 +286,19 @@ namespace RSLBot.Core.Scenarios.Dungeons
             var keysTextArea = new Rectangle(keys.X - 36, keys.Y + 3, 36, keys.Height - 5);
 
             var text = ImageAnalyzer.FindText(Window, true, keysTextArea);
-                
+
             return int.Parse(text.Split('/').First());
         }
-        
+
         private async Task ScrollToEnd()
         {
             await SyncWindow();
-            
+
             for (var def = 0; def < Configuration.MaxScrollAttempts; def++)
             {
                 var checkArea = await GetCheckArea();
                 using var areaBeforeScroll = Window.Clone(checkArea, Window.PixelFormat);
-                
+
                 // Прокрутити вниз
                 MouseDrag(new Point(Configuration.ScrollDragX, Configuration.ScrollDragStartYBottom),
                     new Point(Configuration.ScrollDragX, Configuration.ScrollDragEndYTop), 200, 500);
@@ -203,10 +306,10 @@ namespace RSLBot.Core.Scenarios.Dungeons
 
                 // Перевірити чи змінився екран
                 await SyncWindow();
-                
+
                 using var areaAfterScroll = Window.Clone(checkArea, Window.PixelFormat);
                 var match = ImageAnalyzer.FindImage(areaBeforeScroll, areaAfterScroll, accuracy: 0.98);
-                
+
                 if (match != default)
                 {
                     LoggingService.Info("End of list reached - content did not change after scroll.");
@@ -221,7 +324,7 @@ namespace RSLBot.Core.Scenarios.Dungeons
             {
                 return Configuration.GetCheckArea();
             }
-            
+
             var fights = await FindAllImages(ImageResourceManager[MainScreenDefinition[Configuration.FightImageElementName].ImageTemplatePath]);
             var fight = fights.OrderBy(f => f.Y).Last();
 

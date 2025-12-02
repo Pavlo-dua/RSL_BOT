@@ -5,10 +5,10 @@
         {
             "Name": "PreparingFightVerify",
             "Area": {
-                "X": 830,
-                "Y": 153,
-                "Width": 170,
-                "Height": 170
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
             },
             "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Twins\\preparing_ver.png"
         }
@@ -26,17 +26,19 @@
         }
     ],
     "InnerScreenDefinitions": [],
-    "Transitions": [{
-        "TargetScreenId": "Twins",
-        "TriggerElement": {
-            "Name": "Close",
-            "Area": {
-                "X": 1100,
-                "Y": 0,
-                "Width": 55,
-                "Height": 40
-            },
-            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close.png"
+    "Transitions": [
+        {
+            "TargetScreenId": "Twins",
+            "TriggerElement": {
+                "Name": "Close",
+                "Area": {
+                    "X": 1100,
+                    "Y": 0,
+                    "Width": 55,
+                    "Height": 40
+                },
+                "ImageTemplatePath": "Configuration\\Ukr\\Templates\\ArenaClassic\\close.png"
+            }
         }
-    }]
+    ]
 }
