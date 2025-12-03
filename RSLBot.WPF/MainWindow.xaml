@@ -59,6 +59,12 @@
                     <DataTemplate DataType="{x:Type tabs:MinotaurSettingsViewModel}">
                         <views:MinotaurSettingsView />
                     </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:ShogunSettingsViewModel}">
+                        <views:ShogunSettingsView />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type tabs:SandDevilSettingsViewModel}">
+                        <views:SandDevilSettingsView />
+                    </DataTemplate>
                     <DataTemplate DataType="{x:Type tabs:SettingsViewModel}">
                         <views:SettingsView />
                     </DataTemplate>

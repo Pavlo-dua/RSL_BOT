@@ -1,0 +1,30 @@
+{
+    "ParentId": "Shogun",
+    "Id": "ShogunFighting",
+    "VerificationImages": [
+        {
+            "Name": "FightVerify",
+            "Area": {
+                "X": 1100,
+                "Y": 13,
+                "Width": 60,
+                "Height": 60
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\pause.png"
+        }
+    ],
+    "UIElements": [
+        {
+            "Name": "AutoInactive",
+            "Area": {
+                "X": 20,
+                "Y": 552,
+                "Width": 90,
+                "Height": 90
+            },
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\auto_inactive.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": []
+}

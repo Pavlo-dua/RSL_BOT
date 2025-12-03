@@ -41,6 +41,34 @@
                 },
                 "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\minotaur.png"
             }
+        },
+        {
+            "TargetScreenId": "Shogun",
+            "HorizontalSearch": true,
+            "TriggerElement": {
+                "Name": "Shogun",
+                "Area": {
+                    "X": 0,
+                    "Y": 0,
+                    "Width": 0,
+                    "Height": 0
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\shogun.png"
+            }
+        },
+        {
+            "TargetScreenId": "SandDevil",
+            "HorizontalSearch": true,
+            "TriggerElement": {
+                "Name": "SandDevil",
+                "Area": {
+                    "X": 0,
+                    "Y": 0,
+                    "Width": 0,
+                    "Height": 0
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\devil.png"
+            }
         }
     ]
 }

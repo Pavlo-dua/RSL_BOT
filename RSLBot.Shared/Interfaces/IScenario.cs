@@ -7,7 +7,9 @@ public interface IScenario
         ClassicArena,
         TagArena,
         Twins,
-        Minotaur
+        Minotaur,
+        Shogun,
+        SandDevil
     }
 
     ScenarioId Id { get; }

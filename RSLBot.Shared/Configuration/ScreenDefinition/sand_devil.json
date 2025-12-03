@@ -1,17 +1,17 @@
 {
-    "Id": "Minotaur",
+    "Id": "SandDevil",
     "WindowHeight": 652,
     "WindowWidth": 1173,
     "VerificationImages": [
         {
-            "Name": "MinotaurVerify",
+            "Name": "SandDevilVerify",
             "Area": {
                 "X": 8,
                 "Y": 0,
                 "Width": 450,
                 "Height": 60
             },
-            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Dungeons\\Minotaur\\ver.png"
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\Dungeons\\SandDevil\\ver.png"
         }
     ],
     "UIElements": [
@@ -23,7 +23,7 @@
                 "Width": 0,
                 "Height": 0
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\fight_start.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\SandDevil\\fight_start.png"
         },
         {
             "Name": "energy",

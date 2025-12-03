@@ -57,6 +57,13 @@ namespace RSLBot.WPF.ViewModels.Tabs
                     x => x.Settings.MaxDefeat)
                 .Subscribe(_ => SaveSettings());
 
+            this.WhenAnyValue(
+                    x => x.Settings.MaxBattles,
+                    x => x.Settings.MaxFreeRefills,
+                    x => x.Settings.MaxGemRefills,
+                    x => x.Settings.OptimizeResources)
+                .Subscribe(_ => SaveSettings());
+
             // Коли змінюється вибраний сувій, оновлювати налаштування
             this.WhenAnyValue(x => x.SelectedScroll)
                 .Where(x => x != null)

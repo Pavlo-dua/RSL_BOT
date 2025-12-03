@@ -34,12 +34,14 @@ namespace RSLBot.WPF.ViewModels
         }
 
         public MainViewModel(
-            LogViewModel logViewModel, 
-            DashboardViewModel dashboardVm, 
-            ArenaSettingsViewModel arenaVm, 
+            LogViewModel logViewModel,
+            DashboardViewModel dashboardVm,
+            ArenaSettingsViewModel arenaVm,
             TagArenaSettingsViewModel tagArenaVm,
             TwinsSettingsViewModel twinsVm,
             MinotaurSettingsViewModel MinVm,
+            ShogunSettingsViewModel shogunVm,
+            SandDevilSettingsViewModel sandDevilVm,
             SettingsViewModel settingsVm,
             ILoggingService loggingService)
         {
@@ -51,6 +53,8 @@ namespace RSLBot.WPF.ViewModels
                 new FirstLevelNavigationItem { Label = "Тег Арена", Icon = PackIconKind.ShieldStar},
                 new FirstLevelNavigationItem { Label = "Твінс", Icon = PackIconKind.AccountMultiple},
                 new FirstLevelNavigationItem { Label = "Лабіринт Мінотавра", Icon = PackIconKind.Cow},
+                new FirstLevelNavigationItem { Label = "Сьогун", Icon = PackIconKind.Sword},
+                new FirstLevelNavigationItem { Label = "Дьявол пустелі", Icon = PackIconKind.Skull},
                 new FirstLevelNavigationItem { Label = "Налаштування", Icon = PackIconKind.Cog}
             };
 
@@ -76,7 +80,13 @@ namespace RSLBot.WPF.ViewModels
                                 break;
                             case "Лабіринт Мінотавра":
                                 CurrentContentViewModel = MinVm;
-                                break;                          
+                                break;
+                            case "Сьогун":
+                                CurrentContentViewModel = shogunVm;
+                                break;
+                            case "Дьявол пустелі":
+                                CurrentContentViewModel = sandDevilVm;
+                                break;
                             case "Налаштування":
                                 CurrentContentViewModel = settingsVm;
                                 break;
@@ -87,7 +97,7 @@ namespace RSLBot.WPF.ViewModels
             // Встановлюємо початковий вибраний елемент.
             // Це автоматично викличе підписку вище і встановить початковий контент.
             SelectedItem = NavigationItems.OfType<FirstLevelNavigationItem>().FirstOrDefault(item => item.IsSelected);
-            
+
             loggingService.InfoUi("Ready to use!");
         }
     }

@@ -1,0 +1,64 @@
+{
+    "ParentId": "SandDevil",
+    "Id": "SandDevilPreparing",
+    "VerificationImages": [
+        {
+            "Name": "PreparingFightVerify",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\SandDevil\\preparing_ver.png"
+        }
+    ],
+    "UIElements": [
+        {
+            "Name": "Start",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\SandDevil\\preparing_start_fight.png"
+        },
+        {
+            "Name": "UncheckedSuperRaid",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\SandDevil\\preparing_unchecked.png"
+        },
+        {
+            "Name": "CheckedSuperRaid",
+            "Area": {
+                "X": 0,
+                "Y": 0,
+                "Width": 0,
+                "Height": 0
+            },
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\SandDevil\\preparing_checked.png"
+        }
+    ],
+    "InnerScreenDefinitions": [],
+    "Transitions": [
+        {
+            "TargetScreenId": "SandDevil",
+            "TriggerElement": {
+                "Name": "Close",
+                "Area": {
+                    "X": 1100,
+                    "Y": 0,
+                    "Width": 55,
+                    "Height": 40
+                },
+                "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\ArenaClassic\\close.png"
+            }
+        }
+    ]
+}

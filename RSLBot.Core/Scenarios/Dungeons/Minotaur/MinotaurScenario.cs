@@ -11,7 +11,7 @@ using DynamicData;
 
 namespace RSLBot.Core.Scenarios.Dungeons.Minotaur
 {
-    public class MinotaurScenario : DungeonFarmingScenarioBase<MinotaurFarmingSettings>
+    public class MinotaurScenario : StandardDungeonScenarioBase<MinotaurFarmingSettings>
     {
         protected override ScreenDefinitionId MainFarmingScreenId => ScreenDefinitionId.Minotaur;
         public override IScenario.ScenarioId Id => IScenario.ScenarioId.Minotaur;
@@ -48,26 +48,6 @@ namespace RSLBot.Core.Scenarios.Dungeons.Minotaur
         {
         }
 
-        protected override Task<bool> ProcessDefeatScreen(ScreenDefinition screenDefinition, int countOfDefeat, Action timeoutReset)
-        {
-            return Task.FromResult(settings.MaxDefeat == -1 || settings.MaxDefeat >= countOfDefeat);
-        }
-
-        protected override async Task<int> GetTokenCount()
-        {
-            await SyncWindow();
-
-            var energy = await WaitImage(MainScreenDefinition["energy"]);
-
-            var addResources = await WaitImage(ImageResourceManager[MainScreenDefinition["add_resources"].ImageTemplatePath], new System.Drawing.Rectangle(0, 0, energy.X, energy.Height));
-
-            var keysTextArea = new Rectangle(addResources.X + addResources.Width + 3, addResources.Y + 3, energy.X - addResources.X - addResources.Width - 3, addResources.Height - 5);
-
-            var text = ImageAnalyzer.FindText(Window, true, keysTextArea);
-
-            return int.Parse(text.Split('/').First().Replace(" ", ""));
-        }
-
         protected override async Task<bool> ShouldRerun(ScreenDefinition screenDefinition)
         {
             var isBaseRollVisible = await navigator.IsElementVisibleAsync(screenDefinition["base_roll"]!);
@@ -95,18 +75,6 @@ namespace RSLBot.Core.Scenarios.Dungeons.Minotaur
             }
 
             return await base.ShouldRerun(screenDefinition);
-        }
-
-        protected override async Task ProcessPreparingScreen(ScreenDefinition screenDefinition)
-        {
-            var isUncheckedSuperRaidVisible = await navigator.IsElementVisibleAsync(screenDefinition["UncheckedSuperRaid"]!);
-
-            if (isUncheckedSuperRaidVisible)
-            {
-                await Click(screenDefinition["UncheckedSuperRaid"]!);
-            }
-
-            await base.ProcessPreparingScreen(screenDefinition);
         }
 
         protected override async Task<bool> ProcessCustomScreen(ScreenDefinition screenDefinition)
