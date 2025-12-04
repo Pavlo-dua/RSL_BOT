@@ -56,5 +56,6 @@ public enum ScreenDefinitionId
     SandDevilDefeat,
     SandDevilBuyTokens,
     SandDevilFreeTokens,
-    Hub
+    Hub,
+    NoAuraWarn
 }

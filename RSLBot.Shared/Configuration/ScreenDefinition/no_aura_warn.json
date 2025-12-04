@@ -1,0 +1,15 @@
+{
+    "Id": "NoAuraWarn",
+    "VerificationImages": [
+        {
+            "Name": "Verification",
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\no_aura_warn.png"
+        }
+    ],
+    "UIElements": [
+        {
+            "Name": "Continue",
+            "ImageTemplatePath": "Configuration\\Ukr\\Templates\\b_continue.png"
+        }
+    ]
+}

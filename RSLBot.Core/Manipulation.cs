@@ -43,6 +43,70 @@ namespace RSLBot.Core
             tool.VkDownKey(key);
         }
 
+        private Messaging.VKeys? ParseKey(string? keyString)
+        {
+            if (string.IsNullOrEmpty(keyString))
+                return null;
+
+            // Convert single character to VKeys enum
+            // For example: "R" -> VKeys.KEY_R
+            if (keyString.Length == 1)
+            {
+                var keyName = $"KEY_{keyString.ToUpper()}";
+                if (Enum.TryParse<Messaging.VKeys>(keyName, out var vKey))
+                    return vKey;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Universal method that performs click or keyboard action and optionally waits for result.
+        /// Handles both keyboard shortcuts (if element.Key is defined) and mouse clicks.
+        /// </summary>
+        private async Task<Rectangle> PerformActionAndWait(
+            UIElement element,
+            Point clickPoint,
+            List<UIElement>? waitingElements = null,
+            Func<Task>? misc = null)
+        {
+            var vKey = ParseKey(element.Key);
+
+            if (vKey.HasValue)
+            {
+                // Use keyboard shortcut
+                KeyDown(vKey.Value);
+                Thread.Sleep(300);
+
+                if (misc != null)
+                    await misc.Invoke();
+
+                if (waitingElements != null && waitingElements.Count > 0)
+                    return await WaitAllImages(waitingElements);
+
+                return new Rectangle(clickPoint, new Size(0, 0));
+            }
+            else
+            {
+                // Use mouse click
+                if (waitingElements != null && waitingElements.Count > 0)
+                {
+                    return await ClickWithWait(clickPoint, async () =>
+                    {
+                        if (misc != null)
+                            await misc.Invoke();
+
+                        return await WaitAllImages(waitingElements);
+                    });
+                }
+                else
+                {
+                    Click(clickPoint);
+                    return new Rectangle(clickPoint, new Size(0, 0));
+                }
+            }
+        }
+
         private Bitmap? window;
 
         protected Bitmap? Window
@@ -310,7 +374,15 @@ namespace RSLBot.Core
 
             var clickElement = ImageAnalyzer.FindImage(Window, ImageResourceManager[element.ImageTemplatePath], element.Area);
 
-            return await ClickWithWait(clickElement.ToPoint(), async () => await WaitImage(ImageResourceManager[waitingBitmap.ImageTemplatePath], waitingBitmap.Area));
+            if (clickElement == default)
+            {
+                logger.Error($"Could not find element to click: {element.Name}");
+                return default;
+            }
+
+            // Wait for single element - convert to list
+            var waitingList = new List<UIElement> { waitingBitmap };
+            return await PerformActionAndWait(element, clickElement.ToPoint(), waitingList);
         }
 
         public async Task<Rectangle> Click(UIElement element, List<UIElement>? waitingBitmaps = null, Func<Task>? misc = null)
@@ -320,11 +392,6 @@ namespace RSLBot.Core
 
             await SyncWindow();
 
-            if (misc != null)
-            {
-                await misc.Invoke();
-            }
-
             var clickElementRect = ImageAnalyzer.FindImage(Window, ImageResourceManager[element.ImageTemplatePath], element.Area);
 
             if (clickElementRect == default)
@@ -333,21 +400,7 @@ namespace RSLBot.Core
                 return default;
             }
 
-            if (waitingBitmaps == null || waitingBitmaps.Count == 0)
-            {
-                Click(clickElementRect.ToPoint());
-                return clickElementRect;
-            }
-
-            return await ClickWithWait(clickElementRect.ToPoint(), async () =>
-            {
-                if (misc != null)
-                {
-                    await misc.Invoke();
-                }
-
-                return await WaitAllImages(waitingBitmaps);
-            });
+            return await PerformActionAndWait(element, clickElementRect.ToPoint(), waitingBitmaps, misc);
         }
 
         protected async Task<Rectangle> Click(Point point, List<UIElement> waitingBitmaps)
@@ -378,9 +431,7 @@ namespace RSLBot.Core
                 return default;
             }
 
-            Click(clickElementRect.ToPoint());
-
-            return clickElementRect;
+            return await PerformActionAndWait(element, clickElementRect.ToPoint());
         }
 
         public async Task<Rectangle> Click(Point element, ScreenDefinition waitingScreen, Func<Task>? misc = null)

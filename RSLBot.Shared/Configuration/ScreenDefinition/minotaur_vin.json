@@ -32,7 +32,8 @@
                 "Width": 50,
                 "Height": 50
             },
-            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\rerun.png"
+            "ImageTemplatePath": "Configuration\\ScreenDefinition\\Templates\\Dungeons\\Minotaur\\rerun.png",
+            "Key": "R"
         },
         {
             "Name": "Bastion",

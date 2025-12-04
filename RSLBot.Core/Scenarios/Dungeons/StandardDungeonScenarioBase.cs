@@ -8,6 +8,7 @@ using RSLBot.Core.Services;
 using RSLBot.Shared.Interfaces;
 using RSLBot.Shared.Models;
 using RSLBot.Shared.Settings;
+using Windows.Foundation.Metadata;
 
 namespace RSLBot.Core.Scenarios.Dungeons
 {
@@ -35,6 +36,7 @@ namespace RSLBot.Core.Scenarios.Dungeons
                 if (tournamentPointsElement != null)
                 {
                     // Шукаємо елемент tournament_points на екрані
+                    await Task.Delay(3000);
                     await SyncWindow();
 
                     if (Window == null)
@@ -43,14 +45,14 @@ namespace RSLBot.Core.Scenarios.Dungeons
                         return false;
                     }
 
-                    var match = ImageAnalyzer.FindImage(Window, ImageResourceManager[tournamentPointsElement.ImageTemplatePath]);
+                    var match = ImageAnalyzer.FindImage(Window, ImageResourceManager[tournamentPointsElement.ImageTemplatePath], default, 0.97);
 
                     if (match != default)
                     {
                         // Якщо елемент присутній, то тоді читаємо цифри
                         // починаючи з низу знайденого елемента - 2 пікселя вниз і -1 піксель вліво. Ширина 65. Висота 16.
                         var textArea = new Rectangle(match.X - 1, match.Y + match.Height + 2, 65, 16);
-                        var text = ImageAnalyzer.FindText(Window, true, textArea);
+                        var text = ImageAnalyzer.FindText(Window, true, textArea).Trim().Replace(" ", "").Replace("/", "");
 
                         if (int.TryParse(text, out int points))
                         {
@@ -66,6 +68,7 @@ namespace RSLBot.Core.Scenarios.Dungeons
                         else
                         {
                             LoggingService.WarningUi($"Не вдалося розпізнати турнірні бали. Text: '{text}'");
+
                             // Якщо не вийшло отримати це число, то зупиняєш бій.
                             return false;
                         }

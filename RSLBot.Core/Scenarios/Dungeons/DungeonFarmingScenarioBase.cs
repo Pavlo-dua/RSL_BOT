@@ -94,7 +94,8 @@ namespace RSLBot.Core.Scenarios.Dungeons
                 Configuration.BuyTokensScreenId,
                 Configuration.VictoryScreenId,
                 Configuration.DefeatScreenId,
-                Configuration.FreeTokensScreenId
+                Configuration.FreeTokensScreenId,
+                ScreenDefinitionId.NoAuraWarn
             };
             screensToProcess.AddRange(Configuration.AdditionalScreens);
 
@@ -149,6 +150,9 @@ namespace RSLBot.Core.Scenarios.Dungeons
 
                             await sharedSettings.CancellationTokenSource.CancelAsync();
                             return false;
+                        case ScreenDefinitionId.NoAuraWarn:
+                            await Click(screenDefinition["Continue"]!);
+                            return true;
                         default:
                             return await ProcessCustomScreen(screenDefinition);
 
